@@ -55,7 +55,7 @@ class ExecContainerOptsWindow(Gtk.Window):
         flags = flags.strip(" ")
         if len(lflags)==0: flags = None
 
-        term = TerminalWindow(name=name or id, flags=lflags, cmd=cmd)
+        term = TerminalWindow(name=name or id, subtitle=cmd, flags=lflags, cmd=cmd)
         term.spawn()
         term.show()
         self.destroy()

@@ -5,11 +5,11 @@ from client import Docker
 from constants import *
 from common import ModelType
 from utils import *
-from win.term import *
+from win.term import TerminalWindow, exec
 from win.history import ImageHistoryWindow
-from win.save import ImageExportWindow
-from win.export import ContainerSaveWindow
-from win.load import ImageImportWindow
+from win.save import ImageSaveWindow
+from win.export import ContainerExportWindow
+from win.load import ImageLoadWindow
 from win.top import ContainerTopWindow
 from win.browser import BrowserWindow
 from win.inspect import InspectWindow
@@ -17,12 +17,8 @@ from win.run import RunContainerOptsWindow
 from win.create import ContainerCreateWindow
 from win.exec import ExecContainerOptsWindow
 from win.pull import ImagePullWindow
+from win.build import ImageBuildWindow
 import threading, json, numpy as np
-
-def exec(title=None, subtitle=None, argv=None, envv=None, callback=None, *cbargs):
-    term = TerminalWindow(name=title, subtitle=subtitle)
-    spawn_pty(term.wvTerm, argv, envv, callback, *cbargs)
-    term.show()
 
 @Gtk.Template.from_file('src/ui/pyzza.glade')
 class MainWindow(Gtk.ApplicationWindow):
@@ -943,7 +939,6 @@ class MainWindow(Gtk.ApplicationWindow):
             self.show_dashboard()
             self.show_dashboard_actions(False)
         elif index == 1:
-            #print(f'dashboard-is-not-none: {self.dashboardStore is not None}')
             self.show_containers()
             self.show_container_actions(False)
         elif index == 2:
@@ -1047,26 +1042,6 @@ class MainWindow(Gtk.ApplicationWindow):
         browser = BrowserWindow(self.selected_running_container)
         browser.show()
 
-    """ @Gtk.Template.Callback()
-    def tvFileExplorer_row_expanded_cb(self, a, b, c):
-        print('row-expanded')
-        pass
-
-    @Gtk.Template.Callback()
-    def tvFileExplorer_row_activated_cb(self, args):
-        print('row-activated')
-        pass
-
-    @Gtk.Template.Callback()
-    def tvFileExplorer_move_cursor_cb(self, a, b, c):
-        print('move-cursor')
-        pass
-
-    @Gtk.Template.Callback()
-    def tvFileExplorer_cursor_changed_cb(self, args):
-        print('cursor-changed')
-        pass """
-
     @Gtk.Template.Callback()
     def bAttachContainer_clicked_cb(self, args):
         pass
@@ -1080,54 +1055,22 @@ class MainWindow(Gtk.ApplicationWindow):
         pull = ImagePullWindow()
         pull.show()
 
-    """ @Gtk.Template.Callback()
-    def bPull_clicked_cb(self, args):
-        pass
-    @Gtk.Template.Callback()
-    def bCancelPull_clicked_cb(self, args):
-        pass """
     @Gtk.Template.Callback()
     def tbBuildImage_clicked_cb(self, args):
         self.bBuildImage_clicked_cb(args)
 
-    """ @Gtk.Template.Callback()
+    @Gtk.Template.Callback()
     def bBuildImage_clicked_cb(self, args):
         build = ImageBuildWindow()
-        build.show() """
+        build.show()
 
-    """ @Gtk.Template.Callback()
-    def bBuild_clicked_cb(self, args):
-        pass
-    @Gtk.Template.Callback()
-    def fcbPath_file_set_cb(self, args):
-        print('fcbPath_file_set_cb#args:', args)
-
-    @Gtk.Template.Callback()
-    def fcbPath_current_folder_changed_cb(self, args):
-        print('fcbPath_current_folder_changed_cb#args:', args)
-
-    @Gtk.Template.Callback()
-    def fcbPath_selection_changed_cb(self, args):
-        print('fcbPath_selection_changed_cb#args:', args)
-
-    @Gtk.Template.Callback()
-    def fcbPath_update_preview_cb(self, args):
-        print('fcbPath_update_preview_cb#args:', args)
-
-    @Gtk.Template.Callback()
-    def fcbPath_file_activated_cb(self, args):
-        print('fcbPath_file_activated_cb#args:', args)
-    @Gtk.Template.Callback()
-    def bCancelBuild_clicked_cb(self, args):
-        pass """
-    
     @Gtk.Template.Callback()
     def tbImportImage_clicked_cb(self, args):
         self.bImportImage_clicked_cb(args)
 
     @Gtk.Template.Callback()
     def bImportImage_clicked_cb(self, args):
-        impimg = ImageImportWindow()
+        impimg = ImageLoadWindow()
         impimg.show()
     
     @Gtk.Template.Callback()
@@ -1144,46 +1087,18 @@ class MainWindow(Gtk.ApplicationWindow):
         ccreate = ContainerCreateWindow(image=self.selected_name)
         ccreate.show()
 
-    """ @Gtk.Template.Callback()
-    def bCreateContainerSubmit_clicked_cb(self, args):
-        pass
-    @Gtk.Template.Callback()
-    def bCreateContainerCancel_clicked_cb(self, args):
-        pass """
-    
     @Gtk.Template.Callback()
     def bRenameContainer_clicked_cb(self, args):
         print("coming soon")
     
     @Gtk.Template.Callback()
     def bExportContainer_clicked_cb(self, args):
-        exp = ContainerSaveWindow()
+        exp = ContainerExportWindow(self.selected_id)
         exp.show()
-
-    """ @Gtk.Template.Callback()
-    def fcbExport_clicked_cb(self, args):
-        pass
-    @Gtk.Template.Callback()
-    def fcbCancelExport_clicked_cb(self, args):
-        pass
-    @Gtk.Template.Callback()
-    def fcdExportContainer_current_folder_changed_cb(self, args):
-        print('fcdExportContainer_current_folder_changed_cb')
-
-    @Gtk.Template.Callback()
-    def fcdExportContainer_file_activated_cb(self, args):
-        print('fcdExportContainer_file_activated_cb')
-
-    @Gtk.Template.Callback()
-    def fcdExportContainer_selection_changed_cb(self, args):
-        print('fcdExportContainer_selection_changed_cb')
-    @Gtk.Template.Callback()
-    def fcdExportContainer_update_preview_cb(self, args):
-        print('fcdExportContainer_update_preview_cb') """
 
     @Gtk.Template.Callback()
     def bImageHistory_clicked_cb(self, args):
-        hist = ImageHistoryWindow()
+        hist = ImageHistoryWindow(id=self.selected_id, name=self.selected_name)
         hist.show()
     
     @Gtk.Template.Callback()
@@ -1218,36 +1133,12 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def bSaveImage_clicked_cb(self, args):
-        imgexp = ImageExportWindow(name=self.selected_name)
+        imgexp = ImageSaveWindow(name=self.selected_name)
         imgexp.show()
 
     @Gtk.Template.Callback()
     def bSearchRunContainer_clicked_cb(self, args):
         pass
-
-    """ @Gtk.Template.Callback()
-    def fcdSaveImage_current_folder_changed_cb(self, args):
-        print('[fcdSaveImage_current_folder_changed_cb]:', args)
-
-    @Gtk.Template.Callback()
-    def fcdSaveImage_file_activated_cb(self, args):
-        print('[fcdSaveImage_file_activated_cb]:', args)
-
-    @Gtk.Template.Callback()
-    def fcdSaveImage_selection_changed_cb(self, args):
-        print('[fcdSaveImage_selection_changed_cb]:', args)
-
-    @Gtk.Template.Callback()
-    def fcdSaveImage_update_preview_cb(self, args):
-        print('[fcdSaveImage_update_preview_cb]:', args)
-
-    @Gtk.Template.Callback()
-    def fcbSave_clicked_cb(self, args):
-        print('[fcbSave_clicked_cb]:', args)
-
-    @Gtk.Template.Callback()
-    def fcbCancelSave_clicked_cb(self, args):
-        pass """
 
     @Gtk.Template.Callback()
     def bLoadImage_clicked_cb(self, args):

@@ -4,7 +4,7 @@ from client import Docker
 from constants import *
 from common import ModelType
 from utils import *
-from windows import exec
+from win.term import exec
 
 @Gtk.Template.from_file('src/ui/build_image.glade')
 class ImageBuildWindow(Gtk.Window):

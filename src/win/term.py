@@ -1,5 +1,6 @@
 from gi.repository import Gtk, Vte
 from client import Docker
+from utils import spawn_pty
 
 @Gtk.Template.from_file('src/ui/terminal.glade')
 class TerminalWindow(Gtk.Window):
@@ -24,3 +25,8 @@ class TerminalWindow(Gtk.Window):
 class Terminal(Vte.Terminal):
     def check():
         pass
+
+def exec(title=None, subtitle=None, argv=None, envv=None, callback=None, *cbargs):
+    term = TerminalWindow(name=title, subtitle=subtitle)
+    spawn_pty(term.wvTerm, argv, envv, callback, *cbargs)
+    term.show()

@@ -3,7 +3,7 @@ from client import Docker
 import threading
 
 @Gtk.Template.from_file('src/ui/export_container.glade')
-class ContainerSaveWindow(Gtk.Window):
+class ContainerExportWindow(Gtk.FileChooserDialog):
     __gtype_name__ = 'fcdExportContainer'
 
     id = None
@@ -15,6 +15,7 @@ class ContainerSaveWindow(Gtk.Window):
         super().__init__()
         self.dc = Docker()
         self.id = id
+        self.hbExportContainer.set_subtitle(id)
 
     @Gtk.Template.Callback()
     def fcbExport_clicked_cb(self, args):
