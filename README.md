@@ -1,2 +1,2 @@
 # PYZZA
-Docker desktop client for Linux using GTK+ and Python
+Linux desktop app using GTK+ and Python for managing Docker images and containers
