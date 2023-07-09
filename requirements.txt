@@ -1,0 +1,7 @@
+docker==6.1.2
+numpy==1.24.3
+PyGObject==3.44.1
+python-dateutil==2.8.2
+python-slugify==8.0.1
+pytz==2023.3
+timeago==1.0.16
