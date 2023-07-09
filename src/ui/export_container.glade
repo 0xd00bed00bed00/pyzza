@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkAdjustment" id="adjustment1">
+    <property name="upper">10</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkListStore" id="containersStore">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name command -->
+      <column type="gchararray"/>
+      <!-- column-name status -->
+      <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name image -->
+      <column type="gchararray"/>
+      <!-- column-name hostname -->
+      <column type="gchararray"/>
+      <!-- column-name ipaddr -->
+      <column type="gchararray"/>
+      <!-- column-name macaddr -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="containersStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="containersStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkListStore" id="dashboardStore">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name command -->
+      <column type="gchararray"/>
+      <!-- column-name status -->
+      <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name image -->
+      <column type="gchararray"/>
+      <!-- column-name ports -->
+      <column type="gchararray"/>
+      <!-- column-name mounts -->
+      <column type="gchararray"/>
+      <!-- column-name hostname -->
+      <column type="gchararray"/>
+      <!-- column-name ipaddr -->
+      <column type="gchararray"/>
+      <!-- column-name macaddr -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="dashboardStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="dashboardStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <template class="fcdExportContainer" parent="GtkFileChooserDialog">
+    <property name="can-focus">False</property>
+    <property name="window-position">center</property>
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
+    <property name="type-hint">dialog</property>
+    <property name="do-overwrite-confirmation">True</property>
+    <signal name="current-folder-changed" handler="fcdExportContainer_current_folder_changed_cb" swapped="no"/>
+    <signal name="file-activated" handler="fcdExportContainer_file_activated_cb" swapped="no"/>
+    <signal name="selection-changed" handler="fcdExportContainer_selection_changed_cb" swapped="no"/>
+    <signal name="update-preview" handler="fcdExportContainer_update_preview_cb" swapped="no"/>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="fcbCancelExport">
+                <property name="label" translatable="yes">cancel</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="fcbCancelExport_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="fcbExport">
+                <property name="label" translatable="yes">export</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="fcbExport_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="hbExportContainer">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">export</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </template>
+  <object class="GtkFileFilter" id="ffFileExplorer">
+    <patterns>
+      <pattern>pyzza</pattern>
+    </patterns>
+  </object>
+  <object class="GtkFileFilter" id="ffLoadImage">
+    <mime-types>
+      <mime-type>application/x-tar</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.tar</pattern>
+    </patterns>
+  </object>
+</interface>

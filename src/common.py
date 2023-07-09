@@ -1,0 +1,5 @@
+class ModelType:
+    CONTAINER = 'CONTAINER'
+    IMAGE = 'IMAGE'
+    VOLUME = 'VOLUME'
+    NETWORK = 'NETWORK'

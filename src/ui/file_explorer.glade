@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkFileFilter" id="ffFileExplorer">
+    <patterns>
+      <pattern>pyzza</pattern>
+    </patterns>
+  </object>
+  <object class="GtkFileFilter" id="ffLoadImage">
+    <mime-types>
+      <mime-type>application/x-tar</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.tar</pattern>
+    </patterns>
+  </object>
+  <object class="GtkListStore" id="searchStore">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+      <!-- column-name stars -->
+      <column type="gint"/>
+      <!-- column-name official -->
+      <column type="gboolean"/>
+      <!-- column-name automated -->
+      <column type="gboolean"/>
+    </columns>
+    <signal name="row-deleted" handler="searchStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="searchStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkTextBuffer" id="tbuData"/>
+  <object class="GtkTreeStore" id="tsFileExplorer">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name type -->
+      <column type="gchararray"/>
+      <!-- column-name size -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <template class="wFileExplorer" parent="GtkWindow">
+    <property name="can-focus">False</property>
+    <property name="default-width">400</property>
+    <property name="default-height">800</property>
+    <property name="gravity">center</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkSearchEntry" id="txtSearch">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="primary-icon-name">edit-find-symbolic</property>
+            <property name="primary-icon-activatable">False</property>
+            <property name="primary-icon-sensitive">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkTreeView" id="tvFileExplorer">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="model">tsFileExplorer</property>
+                <property name="expander-column">treeviewcolumn1</property>
+                <property name="activate-on-single-click">True</property>
+                <signal name="cursor-changed" handler="tvFileExplorer_cursor_changed_cb" swapped="no"/>
+                <signal name="move-cursor" handler="tvFileExplorer_move_cursor_cb" swapped="no"/>
+                <signal name="row-activated" handler="tvFileExplorer_row_activated_cb" swapped="no"/>
+                <signal name="row-expanded" handler="tvFileExplorer_row_expanded_cb" swapped="no"/>
+                <child>
+                  <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                    <property name="title" translatable="yes">name</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="yes">type</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="yes">size</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkActionBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="bCopyFrom">
+                <property name="label" translatable="yes">copy from</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bCopyTo">
+                <property name="label" translatable="yes">copy to</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStatusbar" id="sbFileExplorer">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-left">10</property>
+            <property name="margin-right">10</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">2</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="hbFileExplorer">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">file explorer</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

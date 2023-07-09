@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkAdjustment" id="adjustment1">
+    <property name="upper">10</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkListStore" id="containersStore">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name command -->
+      <column type="gchararray"/>
+      <!-- column-name status -->
+      <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name image -->
+      <column type="gchararray"/>
+      <!-- column-name hostname -->
+      <column type="gchararray"/>
+      <!-- column-name ipaddr -->
+      <column type="gchararray"/>
+      <!-- column-name macaddr -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="containersStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="containersStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkListStore" id="dashboardStore">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name command -->
+      <column type="gchararray"/>
+      <!-- column-name status -->
+      <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name image -->
+      <column type="gchararray"/>
+      <!-- column-name ports -->
+      <column type="gchararray"/>
+      <!-- column-name mounts -->
+      <column type="gchararray"/>
+      <!-- column-name hostname -->
+      <column type="gchararray"/>
+      <!-- column-name ipaddr -->
+      <column type="gchararray"/>
+      <!-- column-name macaddr -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="dashboardStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="dashboardStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkFileFilter" id="ffFileExplorer">
+    <patterns>
+      <pattern>pyzza</pattern>
+    </patterns>
+  </object>
+  <object class="GtkFileFilter" id="ffLoadImage">
+    <mime-types>
+      <mime-type>application/x-tar</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.tar</pattern>
+    </patterns>
+  </object>
+  <object class="GtkListStore" id="imagesStore">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name size -->
+      <column type="gchararray"/>
+      <!-- column-name vsize -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="imagesStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="imagesStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkLabel" id="label1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="label" translatable="yes">label</property>
+  </object>
+  <object class="GtkListStore" id="liststore1">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name type -->
+      <column type="gchararray"/>
+      <!-- column-name gfloat1 -->
+      <column type="gfloat"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">asdasd</col>
+        <col id="1" translatable="yes">folder</col>
+        <col id="2">56.45000076293945</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">fds</col>
+        <col id="1" translatable="yes">file</col>
+        <col id="2">0</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="lsFileExplorer">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="networksStore">
+    <columns>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name ports -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="networksStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="networksStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkListStore" id="searchStore">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+      <!-- column-name stars -->
+      <column type="gint"/>
+      <!-- column-name official -->
+      <column type="gboolean"/>
+      <!-- column-name automated -->
+      <column type="gboolean"/>
+    </columns>
+    <signal name="row-deleted" handler="searchStore_row_deleted_cb" swapped="no"/>
+    <signal name="row-inserted" handler="searchStore_row_inserted_cb" swapped="no"/>
+  </object>
+  <object class="GtkTextBuffer" id="tbuData"/>
+  <object class="GtkTextBuffer" id="tbuLogs"/>
+  <template class="wLogs" parent="GtkWindow">
+    <property name="can-focus">False</property>
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
+    <property name="gravity">center</property>
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="shadow-type">in</property>
+        <child>
+          <object class="GtkTextView" id="tvLogs">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="editable">False</property>
+            <property name="wrap-mode">word-char</property>
+            <property name="buffer">tbuLogs</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="hbLogs">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">logs</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
