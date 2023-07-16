@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DOCKERD_ROOTLESS_ROOTLESSKIT_FLAGS="-p 0.0.0.0:2376:2376/tcp" \
+  dockerd-rootless.sh \
+  -H $DOCKER_HOST \
+  -H tcp://0.0.0.0:2376
