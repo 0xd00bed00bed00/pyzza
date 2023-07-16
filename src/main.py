@@ -1,10 +1,10 @@
-import gi, os
+import gi, os, sys
 print(os.getcwd())
 gi.require_version("Gtk", "3.0")
 gi.require_version('Vte', '2.91')
 gi.require_version('Notify', '0.7')
 from gi.repository import Gtk, GObject, Vte, Notify, Gio
-from windows import *
+from windows import MainWindow
 from constants import APP_ID
 import faulthandler
 

@@ -1,9 +1,10 @@
 from gi.repository import Gtk
 from args import *
 from client import Docker
-from constants import APP_ID, UI_FILE
 from common import ModelType
 from utils import *
+from models.helpers import *
+from config import APP_VERSION, APP_NAME
 from win.browser import BrowserWindow
 from win.history import ImageHistoryWindow
 from win.save import ImageSaveWindow
@@ -159,7 +160,7 @@ class MainWindow(Gtk.ApplicationWindow):
             if event['Action'] == 'start':
                 try:
                     id = event['id']
-                    rcrow = self.dashboard_create_row(id)
+                    rcrow = dashboard_create_row(client=self.dc, id=id)
                     name = event['Actor']['Attributes']['name']
                     if self.containers is None: return
                     arr = self.containers
@@ -185,7 +186,7 @@ class MainWindow(Gtk.ApplicationWindow):
             elif event['Action'] == 'die':
                 try:
                     id = event['id']
-                    ccrow = self.containers_create_row(id)
+                    ccrow = containers_create_row(client=self.dc, id=id)
                     name = event['Actor']['Attributes']['name']
                     if self.running_containers is None: return
                     arr = self.running_containers
@@ -237,7 +238,7 @@ class MainWindow(Gtk.ApplicationWindow):
                     if self.containers is None: return
                     if self.containersStore is None: return
                     if self.containersStore is not None:
-                        crow = self.containers_create_row(id)
+                        crow = containers_create_row(client=self.dc, id=id)
                         self.containersStore.append(crow)
                         self.containers = np.append(self.containers, [crow], axis=0)
                 except Exception as e:
@@ -270,7 +271,7 @@ class MainWindow(Gtk.ApplicationWindow):
     #endregion
 
     #region row creation helpers
-    def dashboard_create_row(self, id=None, immut=False):
+    """ def dashboard_create_row(self, id=None, immut=False):
         if id is None: return
         try:
             m = self.dc.get_container(id)
@@ -298,9 +299,9 @@ class MainWindow(Gtk.ApplicationWindow):
             if immut: return tuple(r)
             return r
         except Exception as e:
-            print('[dashboard_create_row] error:', e)
+            print('[dashboard_create_row] error:', e) """
     
-    def containers_create_row(self, id=None, immut=False):
+    """ def containers_create_row(self, id=None, immut=False):
         if id is None: return
         try:
             m = self.dc.get_container(id)
@@ -326,9 +327,9 @@ class MainWindow(Gtk.ApplicationWindow):
             if immut: return tuple(r)
             return r
         except:
-            print('[containers_create_row] error')
+            print('[containers_create_row] error') """
     
-    def images_create_row(self, id=None, immut=False):
+    """ def images_create_row(self, id=None, immut=False):
         try:
             m = self.dc.get_image(id)
             ago = get_time_ago(m.attrs['Created'])
@@ -344,9 +345,9 @@ class MainWindow(Gtk.ApplicationWindow):
             if immut: return tuple(r)
             return r
         except Exception as e:
-            print('[images_create_row] error:', e)
+            print('[images_create_row] error:', e) """
 
-    def volumes_create_row(self, id=None, immut=False):
+    """ def volumes_create_row(self, id=None, immut=False):
         try:
             v = self.dc.get_volume(id)
             ago = get_time_ago(v.attrs['CreatedAt'], ms=False)
@@ -359,9 +360,9 @@ class MainWindow(Gtk.ApplicationWindow):
             if immut: return tuple(r)
             return r
         except Exception as e:
-            print('[volumes_create_row] error:', e)
+            print('[volumes_create_row] error:', e) """
     
-    def networks_create_row(self, id=None, immut=False):
+    """ def networks_create_row(self, id=None, immut=False):
         try:
             n = self.dc.get_network(id)
             ago = get_time_ago(n.attrs['Created'])
@@ -374,7 +375,7 @@ class MainWindow(Gtk.ApplicationWindow):
             if immut: return tuple(r)
             return r
         except Exception as e:
-            print('[networks_create_row] error:', e)
+            print('[networks_create_row] error:', e) """
     #endregion
 
     #region class methods
@@ -391,11 +392,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_network_actions(False)
         self.show_search_actions(False)
 
-        title = 'pyzza'
-        if check_priv():
-            title = f'pyzza [sudo]'
+        title = APP_NAME
         self.hbMain.set_title(title)
-        self.hbMain.set_subtitle('version 0.1')
+        self.hbMain.set_subtitle(APP_VERSION)
         super().present()
 
     def check_engine(self):
@@ -413,10 +412,6 @@ class MainWindow(Gtk.ApplicationWindow):
                 w.show()
             w.set_visible(vis)
 
-    """ def exec(self, title=None, subtitle=None, argv=None, envv=None, callback=None, *cbargs):
-        term = TerminalWindow(name=title, subtitle=subtitle)
-        spawn_pty(term.wvTerm, argv, envv, callback, *cbargs)
-        term.show() """
     #endregion
 
     #region show pages
@@ -518,9 +513,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_network_actions()
 
     def show_term(self):
-        if self.term is not None:
-            spawn_pty(self.term, ['/bin/zsh'], [], None)
-        #self.exec('/bin/zsh', argv=['/bin/zsh'])
+        if self.term.get_pty() is None:
+            shell = os.environ.get('SHELL')
+            spawn_pty(self.term, [shell], [], None)
 
     #endregion
 
@@ -565,21 +560,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         if status == 'running':
             self.vis(False, bresume)
-            #bresume.hide()
-            #bresume.set_visible(False)
         elif status == 'paused':
-            """ bsuspend.hide()
-            bstop.hide()
-            bkill.hide()
-            bexec.hide()
-            battach.hide()
-            brestart.hide()
-            bsuspend.set_visible(False)
-            bstop.set_visible(False)
-            bkill.set_visible(False)
-            bexec.set_visible(False)
-            battach.set_visible(False)
-            brestart.set_visible(False) """
             self.vis(False, bsuspend, bkill, bexec, battach, brestart, bstop)
 
     def show_image_actions(self, vis=True):
@@ -1033,7 +1014,9 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def bRunContainer_clicked_cb(self, args):
-        opts = RunContainerOptsWindow(from_search=self.fromSearch)
+        (image, img) = self.selected_image
+        cmd = ' '.join(img['Config']['Cmd'])
+        opts = RunContainerOptsWindow(image_name=image[0], cmd=cmd, from_search=self.fromSearch)
         opts.show()
 
     @Gtk.Template.Callback()
@@ -1075,7 +1058,7 @@ class MainWindow(Gtk.ApplicationWindow):
     
     @Gtk.Template.Callback()
     def bContainerTop_clicked_cb(self, args):
-        top = ContainerTopWindow(id=self.selected_id, name=self.selected_name)
+        top = ContainerTopWindow(id=self.selected_id, name=self.selected_name, client=self.dc)
         top.show()
     
     @Gtk.Template.Callback()
@@ -1145,29 +1128,5 @@ class MainWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def bLoadImage_clicked_cb(self, args):
         pass
-
-    """ @Gtk.Template.Callback()
-    def fcdLoadImage_current_folder_changed_cb(self, args):
-        pass
-
-    @Gtk.Template.Callback()
-    def fcdLoadImage_file_activated_cb(self, args):
-        pass
-
-    @Gtk.Template.Callback()
-    def fcdLoadImage_selection_changed_cb(self, args):
-        pass
-
-    @Gtk.Template.Callback()
-    def fcdLoadImage_update_preview_cb(self, args):
-        pass
-
-    @Gtk.Template.Callback()
-    def fcbOpen_clicked_cb(self, args):
-        pass
-
-    @Gtk.Template.Callback()
-    def fcbCancelOpen_clicked_cb(self, args):
-        pass """
 
     #endregion

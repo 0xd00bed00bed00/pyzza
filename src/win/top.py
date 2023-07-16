@@ -10,9 +10,9 @@ class ContainerTopWindow(Gtk.Window):
     id = None
     name = None
 
-    def __init__(self, id=None, name=None):
+    def __init__(self, id=None, name=None, client=None):
+        self.dc = client
         super().__init__()
-        self.dc = Docker()
         self.id = id
         self.name = name
 

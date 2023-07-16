@@ -1,7 +1,8 @@
 from utils import get_time_ago, spawn_pty, pretty_size
 from common import *
 from args import *
-import os, inspect, docker
+import os, docker
+from config import DOCKER_HOST
 #inspect.getfile(os)
 #inspect.getfile(docker)
 #os.path.dirname(inspect.getfile(docker))
@@ -15,11 +16,7 @@ class Docker:
         global _dock
         global _apiclient
 
-        _dock = None
-        if os.environ.get('DOCKER_HOST') is not None:
-            _dock = docker.from_env()
-        else:
-            _dock = DockerClient(base_url='tcp://0.0.0.0:2375') #docker.from_env()
+        _dock = DockerClient(base_url=DOCKER_HOST)
         _apiclient = _dock.api
         self.daemon = _dock
         self.client = _apiclient

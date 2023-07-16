@@ -23,10 +23,18 @@ class RunContainerOptsWindow(Gtk.Window):
     chRunContainerNetDisabled = Gtk.Template.Child()
 
     fromSearch = False
+    imageName = None
+    containerName = None
+    command = None
 
-    def __init__(self, from_search=False):
+    def __init__(self, image_name=None, container_name=None, cmd=None, from_search=False, client=None):
         super().__init__()
+        self.dc = client
         self.fromSearch = from_search
+        self.imageName = image_name
+        self.containerName = container_name or image_name
+        if not from_search:
+            self.command = cmd
 
     @Gtk.Template.Callback()
     def bRunContainerCancel_clicked_cb(self, args):
@@ -60,3 +68,9 @@ class RunContainerOptsWindow(Gtk.Window):
         th.start()
         
         if not self.fromSearch: self.destroy()
+
+    def show(self):
+        super().show()
+        self.txtiImageName.set_text(self.imageName)
+        self.txtiContainerName.set_text(self.containerName)
+        self.txtiCommand.set_text(self.command)
