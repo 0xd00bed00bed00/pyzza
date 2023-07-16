@@ -1,7 +1,13 @@
 from utils import get_time_ago, spawn_pty, pretty_size
 from common import *
 from args import *
+import os, inspect, docker
+#inspect.getfile(os)
+#inspect.getfile(docker)
+#os.path.dirname(inspect.getfile(docker))
+
 import docker
+from docker import DockerClient
 
 class Docker:
     def __init__(self):
@@ -9,7 +15,11 @@ class Docker:
         global _dock
         global _apiclient
 
-        _dock = docker.from_env()
+        _dock = None
+        if os.environ.get('DOCKER_HOST') is not None:
+            _dock = docker.from_env()
+        else:
+            _dock = DockerClient(base_url='tcp://0.0.0.0:2375') #docker.from_env()
         _apiclient = _dock.api
         self.daemon = _dock
         self.client = _apiclient
@@ -186,23 +196,64 @@ class Docker:
     def exec_run(self, id, kwargs=ExecRunKwargs()):
         cont = _dock.containers.get(id)
         (exit_code, output) = cont.exec_run(**kwargs.__dict__)
-        return output
+        return (exit_code, output)
     
     def ls(self, id, path=None):
-        kwargs = ExecRunKwargs(cmd=f'ls -a {path or "."}')
-        output = self.exec_run(id, kwargs=kwargs)
+        kwargs = ExecRunKwargs(cmd=f'ls -NAlhkL --group-directories-first {path or "."}')
+        (exit_code, output) = self.exec_run(id, kwargs=kwargs)
         output = str(output.decode('ascii')).strip()
-        #print(output)
         names = output.split('\n')
-        #print(names)
         return names
     
     def stat(self, id, path):
         kwargs = ExecRunKwargs(cmd=f'file {path}')
-        output = self.exec_run(id, kwargs=kwargs)
+        (exit_code, output) = self.exec_run(id, kwargs=kwargs)
         output = str(output.decode('ascii')).strip()
-        print(output)
+        #print(output)
         return output
+    
+    def get_file_type(self, id, path):
+        cmd = self.check_if_exists(
+            path,
+            true=self.check_if_dir(
+                path,
+                true='echo directory',
+                false=self.check_if_file(
+                    path,
+                    true='echo file',
+                    false=self.check_if_link(
+                        path,
+                        true='echo symlink',
+                        false='exit 1'
+                    ),
+                ),
+            ),
+            false='exit 1',
+        )
+        #print('[cmd]: ', cmd)
+        kwargs = ExecRunKwargs(cmd=f'sh -c "{cmd}"')
+        (exit_code, output) = self.exec_run(id, kwargs=kwargs)
+        output = str(output.decode('ascii')).strip()
+        #print(output, exit_code)
+        return output
+    
+    def get_mime_type(self, id, path):
+        kwargs = ExecRunKwargs(cmd=f'file -b {path}')
+        (exit_code, output) = self.exec_run(id, kwargs=kwargs)
+        output = str(output.decode('ascii')).strip()
+        print(output, exit_code)
+        return output
+
+    def check_if_file(self, path, true='echo "file" && exit 2', false=None):
+        return f'[ -f {path} ] && {true} || ({false})'
+    def check_if_dir(self, path, true='echo "directory" && exit 1', false=None):
+        return f'[ -d {path} ] && {true} || ({false})'
+    def check_if_link(self, path, true='echo "symlink" && exit 3', false=None):
+        return f'[ -l {path} ] && {true} || ({false})'
+    def check_if_exists(self, path, true=None, false=None):
+        return f'[ -e {path} ] && ({true}) || ({false})'
+    def check_if(self, path):
+        return f'[ -e {path} ]'
 
     def exec_container(self, term, name, flags, cmd, callback=None, *cbargs):
         c = ['docker', 'exec']

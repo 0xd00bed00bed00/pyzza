@@ -1,23 +1,22 @@
 from gi.repository import Gtk
-from slugify import slugify
 from args import *
 from client import Docker
-from constants import *
+from constants import APP_ID, UI_FILE
 from common import ModelType
 from utils import *
-from win.term import TerminalWindow, exec
+from win.browser import BrowserWindow
 from win.history import ImageHistoryWindow
 from win.save import ImageSaveWindow
 from win.export import ContainerExportWindow
 from win.load import ImageLoadWindow
 from win.top import ContainerTopWindow
-from win.browser import BrowserWindow
 from win.inspect import InspectWindow
 from win.run import RunContainerOptsWindow
 from win.create import ContainerCreateWindow
 from win.exec import ExecContainerOptsWindow
 from win.pull import ImagePullWindow
 from win.build import ImageBuildWindow
+from win.term import exec
 import threading, json, numpy as np
 
 @Gtk.Template.from_file('src/ui/pyzza.glade')
@@ -137,7 +136,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_container_actions(False)
         self.show_image_actions(False)
         for event in self.dc.daemon.events(decode=True, filters={'Type':'container'}):
-            print('event:', event)
+            #print('event:', event)
             event_type = event['Type']
             event_action = event['Action']
             #print('event_type:', event_type)
@@ -1040,7 +1039,8 @@ class MainWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def bBrowse_clicked_cb(self, args):
         browser = BrowserWindow(self.selected_running_container)
-        browser.show()
+        th = threading.Thread(target=browser.show, daemon=True)
+        th.start()
 
     @Gtk.Template.Callback()
     def bAttachContainer_clicked_cb(self, args):
@@ -1121,11 +1121,13 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def bPruneContainers_clicked_cb(self, args):
-        print("coming soon")
+        pruned = self.dc.prune_containers()
+        print(pruned)
 
     @Gtk.Template.Callback()
     def bPruneImages_clicked_cb(self, args):
-        print("coming soon")
+        pruned = self.dc.prune_images()
+        print(pruned)
 
     @Gtk.Template.Callback()
     def bDiffContainer_clicked_cb(self, args):
@@ -1144,7 +1146,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def bLoadImage_clicked_cb(self, args):
         pass
 
-    @Gtk.Template.Callback()
+    """ @Gtk.Template.Callback()
     def fcdLoadImage_current_folder_changed_cb(self, args):
         pass
 
@@ -1166,6 +1168,6 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def fcbCancelOpen_clicked_cb(self, args):
-        pass
+        pass """
 
     #endregion

@@ -1,9 +1,12 @@
-import gi
+import gi, os
+print(os.getcwd())
 gi.require_version("Gtk", "3.0")
 gi.require_version('Vte', '2.91')
 gi.require_version('Notify', '0.7')
 from gi.repository import Gtk, GObject, Vte, Notify, Gio
 from windows import *
+from constants import APP_ID
+import faulthandler
 
 GObject.type_register(Vte.Terminal)
 
@@ -19,6 +22,7 @@ class Pyzza(Gtk.Application):
 
 def main():
     try:
+        faulthandler.enable()
         # get_priv()
         app = Pyzza()
         app.run(sys.argv)

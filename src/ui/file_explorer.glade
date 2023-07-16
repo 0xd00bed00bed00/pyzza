@@ -2,6 +2,69 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkFileChooserDialog" id="fcdCopyFile">
+    <property name="can-focus">False</property>
+    <property name="type-hint">dialog</property>
+    <property name="do-overwrite-confirmation">True</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="bCancel">
+                <property name="label" translatable="yes">cancel</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bConfirm">
+                <property name="label" translatable="yes">button</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="hbCopyFile">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">copy file</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkFileFilter" id="ffFileExplorer">
     <patterns>
       <pattern>pyzza</pattern>
@@ -40,12 +103,19 @@
       <column type="gchararray"/>
       <!-- column-name size -->
       <column type="gchararray"/>
+      <!-- column-name created -->
+      <column type="gchararray"/>
+      <!-- column-name owner -->
+      <column type="gchararray"/>
+      <!-- column-name permissions -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <template class="wFileExplorer" parent="GtkWindow">
     <property name="can-focus">False</property>
     <property name="default-width">400</property>
     <property name="default-height">800</property>
+    <property name="skip-pager-hint">True</property>
     <property name="gravity">center</property>
     <child>
       <object class="GtkBox">
@@ -82,6 +152,9 @@
                 <signal name="move-cursor" handler="tvFileExplorer_move_cursor_cb" swapped="no"/>
                 <signal name="row-activated" handler="tvFileExplorer_row_activated_cb" swapped="no"/>
                 <signal name="row-expanded" handler="tvFileExplorer_row_expanded_cb" swapped="no"/>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                     <property name="title" translatable="yes">name</property>
@@ -115,6 +188,39 @@
                     </child>
                   </object>
                 </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="yes">created</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">3</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="yes">owner</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">4</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
+                    <property name="title" translatable="yes">permissions</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">5</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -129,22 +235,24 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkButton" id="bCopyFrom">
-                <property name="label" translatable="yes">copy from</property>
+              <object class="GtkButton" id="bCopyToContainer">
+                <property name="label" translatable="yes">copy to container</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <signal name="clicked" handler="bCopyToContainer_clicked_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="bCopyTo">
-                <property name="label" translatable="yes">copy to</property>
+              <object class="GtkButton" id="bCopyFromContainer">
+                <property name="label" translatable="yes">copy from container</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <signal name="clicked" handler="bCopyFromContainer_clicked_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="position">0</property>

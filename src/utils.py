@@ -1,9 +1,13 @@
 import gi, os, sys, subprocess
+""" gi.require_version("Gtk", "3.0")
+gi.require_version('Vte', '2.91')
+gi.require_version('Notify', '0.7') """
 from dateutil.parser import parse
 from datetime import datetime, date
 import timeago, pytz, time
 #gi.require_version('Vte', '2.91')
-from gi.repository import Vte, GLib, Notify
+from gi.repository import Vte
+from gi.repository import GLib, Notify
 
 def get_time_ago(d, ms=True):
     pd = parse(d)

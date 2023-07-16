@@ -1,6 +1,6 @@
 from gi.repository import Gtk
 from client import Docker
-from windows import TerminalWindow
+from win.term import TerminalWindow
 
 @Gtk.Template.from_file('src/ui/exec_container_opts.glade')
 class ExecContainerOptsWindow(Gtk.Window):
