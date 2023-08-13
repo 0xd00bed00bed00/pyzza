@@ -111,7 +111,7 @@ class Docker:
                 store.append(r)
                 yield r
             except Exception as e:
-                print('[list_images] error:', e)
+                print(f'[list_images#{img.id[0:16]}] error:', e)
 
     def list_volumes(self):
         volumes = _dock.volumes.list()
@@ -196,7 +196,7 @@ class Docker:
         return (exit_code, output)
     
     def ls(self, id, path=None):
-        kwargs = ExecRunKwargs(cmd=f'ls -NAlhkL --group-directories-first {path or "."}')
+        kwargs = ExecRunKwargs(cmd=f'ls -AlhkL --group-directories-first {path or "."}')
         (exit_code, output) = self.exec_run(id, kwargs=kwargs)
         output = str(output.decode('ascii')).strip()
         names = output.split('\n')

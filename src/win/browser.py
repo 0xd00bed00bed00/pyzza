@@ -1,6 +1,7 @@
 import gi
 from gi.repository import Gtk
 from client import Docker
+from .ccopy import *
 import numpy as np
 
 @Gtk.Template.from_file('src/ui/file_explorer.glade')
@@ -30,11 +31,12 @@ class BrowserWindow(Gtk.Window):
     def show(self):
         #self.selected_path.append()
         for line in self.dc.ls(self.container_id, path='/'):
-            #print(line)
+            #print('[line]:', line)
             props = line.split(' ')
-            #print(props)
             props = self.remove_empty(props)
+            #print('[props]:', props)
             #print('[props]:', len(props), props)
+            if len(props)==0: continue
             name = props[-1]
             if name in ['.', '..'] or len(props)<9:
                 continue
@@ -50,17 +52,17 @@ class BrowserWindow(Gtk.Window):
             self.tsFileExplorer.append(None, row)
         super().show()
 
-    """ @Gtk.Template.Callback()
-    def tvFileExplorer_row_expanded_cb(self, a, b, c):
-        print('row-expanded') """
+    @Gtk.Template.Callback()
+    def tvFileExplorer_move_cursor_cb(self, args):
+        pass
 
-    """ @Gtk.Template.Callback()
-    def tvFileExplorer_row_activated_cb(self, a, b, c):
-        print('row-activated') """
+    @Gtk.Template.Callback()
+    def tvFileExplorer_row_activated_cb(self, args, a, b):
+        pass
 
-    """ @Gtk.Template.Callback()
-    def tvFileExplorer_move_cursor_cb(self, a, b, c):
-        print('move-cursor') """
+    @Gtk.Template.Callback()
+    def tvFileExplorer_row_expanded_cb(self, args, a, b):
+        pass
 
     @Gtk.Template.Callback()
     def tvFileExplorer_cursor_changed_cb(self, args):
@@ -91,13 +93,13 @@ class BrowserWindow(Gtk.Window):
         else:
             spath = list()
             (file_path, spath) = self.get_file_path(tpath, model)
-            print('[get_file_path]:', file_path, spath)
+            #print('[get_file_path]:', file_path, spath)
             self.selected_path = spath
         file_uri = '/' + file_path
         #names = model.get(iter, 0)
         #tree = list(names)
         #file_path = '/'.join(tree)
-        print('[file_uri]: ', file_uri)
+        #print('[file_uri]: ', file_uri)
         file_type = self.dc.get_file_type(self.container_id, path=file_uri)
         if perms!='directory':
             return
@@ -107,7 +109,7 @@ class BrowserWindow(Gtk.Window):
             props = name.split(' ')
             props = np.array(props)
             props = props[(props!='')]
-            print('[props]:', props, len(props))
+            #print('[props]:', props, len(props))
             #props = self.remove_empty(props)
             if len(props)<9:
                 continue
@@ -137,7 +139,7 @@ class BrowserWindow(Gtk.Window):
             else:
                 file_type = 'unknown'
             row = [nn, file_type, props[4], created, owner, props[0]]
-            print('[row]:', row)
+            #print('[row]:', row)
             model.append(iter, row)
 
     def remove_empty(self, arr):
@@ -148,11 +150,13 @@ class BrowserWindow(Gtk.Window):
     
     @Gtk.Template.Callback()
     def bCopyToContainer_clicked_cb(self, args):
-        pass
+        copyto = CopyToContainerWindow()
+        copyto.show()
 
     @Gtk.Template.Callback()
     def bCopyFromContainer_clicked_cb(self, args):
-        pass
+        copyfrom = CopyFromContainerWindow()
+        copyfrom.show()
 
     def get_file_path(self, tpath: Gtk.TreePath, model):
         idx = np.array(tpath.get_indices())

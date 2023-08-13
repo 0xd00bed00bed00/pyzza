@@ -2,10 +2,91 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkFileChooserNative"/>
+  <object class="GtkFileFilter" id="ffCopyTo">
+    <mime-types>
+      <mime-type>application/x-tar</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.tar</pattern>
+    </patterns>
+  </object>
   <template class="wCopyToContainer" parent="GtkWindow">
     <property name="can-focus">False</property>
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
     <child>
-      <placeholder/>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkFileChooserWidget" id="fcwCopyTo">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="filter">ffCopyTo</property>
+            <signal name="confirm-overwrite" handler="fcwCopyTo_confirm_overwrite_cb" swapped="no"/>
+            <signal name="current-folder-changed" handler="fcwCopyTo_current_folder_changed_cb" swapped="no"/>
+            <signal name="down-folder" handler="fcwCopyTo_down_folder_cb" swapped="no"/>
+            <signal name="file-activated" handler="fcwCopyTo_file_activated_cb" swapped="no"/>
+            <signal name="selection-changed" handler="fcwCopyTo_selection_changed_cb" swapped="no"/>
+            <signal name="up-folder" handler="fcwCopyTo_up_folder_cb" swapped="no"/>
+            <signal name="update-preview" handler="fcwCopyTo_update_preview_cb" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="spacing">5</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="bCancel">
+                <property name="label" translatable="yes">cancel</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bCancel_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bSave">
+                <property name="label" translatable="yes">save</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bSave_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">5</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
     </child>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="hbCopyToContainer">

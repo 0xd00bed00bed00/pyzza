@@ -235,24 +235,24 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkButton" id="bCopyToContainer">
-                <property name="label" translatable="yes">copy to container</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="bCopyToContainer_clicked_cb" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="bCopyFromContainer">
                 <property name="label" translatable="yes">copy from container</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="bCopyFromContainer_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bCopyToContainer">
+                <property name="label" translatable="yes">copy to container</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bCopyToContainer_clicked_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="position">0</property>

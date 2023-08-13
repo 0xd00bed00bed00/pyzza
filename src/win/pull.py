@@ -4,8 +4,6 @@ from gi.repository import Gtk
 class ImagePullWindow(Gtk.Window):
     __gtype_name__ = 'wPullImage'
 
-    #bPull = Gtk.Template.Child()
-    #bCancelPull = Gtk.Template.Child()
     txtImageRepo = Gtk.Template.Child()
 
     def __init__(self, repo=None):

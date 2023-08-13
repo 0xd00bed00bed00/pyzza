@@ -6,3 +6,11 @@ class ImageLoadWindow(Gtk.FileChooserDialog):
 
     def __init__(self):
         super().__init__()
+
+    @Gtk.Template.Callback()
+    def fcbCancelOpen(self, args):
+        pass
+
+    @Gtk.Template.Callback()
+    def fcbOpen(self, args):
+        pass

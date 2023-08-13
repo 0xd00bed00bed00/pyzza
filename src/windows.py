@@ -18,6 +18,7 @@ from win.exec import ExecContainerOptsWindow
 from win.pull import ImagePullWindow
 from win.build import ImageBuildWindow
 from win.term import exec
+from win.ccopy import CopyFromContainerWindow, CopyToContainerWindow
 import threading, json, numpy as np
 
 @Gtk.Template.from_file('src/ui/pyzza.glade')
@@ -111,6 +112,9 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def __init__(self, application):
         super().__init__(application=application)
+
+        #self.running_containers = np.empty((0,10))
+
         self.dc = Docker()
         self.check_engine()
         the = threading.Thread(target=self.listen_to_events, daemon=True, name='events')
@@ -154,6 +158,9 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.listen_to_network_events(event)
         
     def listen_to_container_events(self, event=None):
+        print(self.running_containers is not None)
+        if self.running_containers is None:
+            self.running_containers = np.empty((0, 11))
         self.dashboard_cursor_moved = False
         self.containers_cursor_moved = False
         try:
@@ -168,16 +175,17 @@ class MainWindow(Gtk.ApplicationWindow):
                     [row], [col] = rowcol
                     assert self.containers[row][col] == id
                     tpath = Gtk.TreePath.new_from_indices([row, col])
-                    if self.containersStore is None: return
-                    if tpath is None: return
-                    iter = self.containersStore.get_iter(tpath)
-                    nc = self.containersStore.get_n_columns()
-                    crow = list(range(nc))
-                    crow = self.containersStore.get(iter, *crow)
-                    assert self.containersStore is not None
-                    self.containers = np.delete(arr, row, 0)
-                    self.containersStore.remove(iter)
+                    if self.containersStore is not None:
+                        if tpath is None: return
+                        iter = self.containersStore.get_iter(tpath)
+                        nc = self.containersStore.get_n_columns()
+                        crow = list(range(nc))
+                        crow = self.containersStore.get(iter, *crow)
+                        self.containers = np.delete(arr, row, 0)
+                        self.containersStore.remove(iter)
                     if self.running_containers is not None:
+                        nc = 0 #self.running_containers.get_n_columns()
+                        print(rcrow, len(rcrow), nc, len(rcrow)==nc, np.shape(self.running_containers))
                         self.running_containers = np.append(self.running_containers, [rcrow], axis=0)
                         self.dashboardStore.append(rcrow)
                 except Exception as e:
@@ -426,10 +434,12 @@ class MainWindow(Gtk.ApplicationWindow):
             return
 
         runc = list()
+        self.running_containers = np.empty((0, 11))
         for c in self.dc.list_containers():
             runc.append(c)
             store.append(c)
-        self.running_containers = np.array(runc)
+        if len(runc) > 0:            
+            self.running_containers = np.array(runc)
 
         ld = len(self.running_containers)
         self.lDashboard.set_text("running ({})".format(ld))
@@ -838,13 +848,13 @@ class MainWindow(Gtk.ApplicationWindow):
     def networksStore_row_deleted_cb(self, a, b):
         if self.networks is None: return
         d1, d2 = np.shape(self.networks) #len(self.networks)
-        self.lNetworks.set_text(f'running ({d1})')
+        self.lNetworks.set_text(f'networks ({d1})')
 
     @Gtk.Template.Callback()
     def networksStore_row_inserted_cb(self, a, b, c):
         if self.networks is None: return
         d1, d2 = np.shape(self.networks) #len(self.networks)
-        self.lNetworks.set_text(f'running ({d1})')
+        self.lNetworks.set_text(f'networks ({d1})')
 
     def network_select(self, a):
         sel = a.get_selection()
@@ -958,7 +968,15 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_container_actions(False)
         container, c = self.selected_container
         id = self.selected_id
-        th = threading.Thread(target=self.dc.start_container, args=[id], daemon=True)
+        name = self.selected_name
+        def start(*args):
+            try:
+                self.dc.start_container(*args)
+            except Exception as exc:
+                print(type(exc))
+                print(vars(exc))
+                notify(summary=f'Error on {name or id[:16]}', body=exc.explanation)
+        th = threading.Thread(target=start, args=[id], daemon=True)
         th.start()
 
     @Gtk.Template.Callback()
@@ -1016,12 +1034,13 @@ class MainWindow(Gtk.ApplicationWindow):
     def bRunContainer_clicked_cb(self, args):
         (image, img) = self.selected_image
         cmd = ' '.join(img['Config']['Cmd'])
-        opts = RunContainerOptsWindow(image_name=image[0], cmd=cmd, from_search=self.fromSearch)
+        opts = RunContainerOptsWindow(client=self.dc, image_name=image[1], cmd=cmd, from_search=self.fromSearch)
         opts.show()
 
     @Gtk.Template.Callback()
     def bBrowse_clicked_cb(self, args):
         browser = BrowserWindow(self.selected_running_container)
+        #browser.show()
         th = threading.Thread(target=browser.show, daemon=True)
         th.start()
 
@@ -1123,7 +1142,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def bSearchRunContainer_clicked_cb(self, args):
-        pass
+        print(self.selected_name, self.fromSearch)
 
     @Gtk.Template.Callback()
     def bLoadImage_clicked_cb(self, args):
