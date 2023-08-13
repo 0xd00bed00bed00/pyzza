@@ -60,6 +60,7 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 ## FEATURES
 ### GLOBAL
 - [x] built-in terminal
+
 ### CONTAINERS
 - [x] run container
 - [x] start/stop/suspend/resume container
@@ -93,8 +94,7 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 - [x] inspect
 
 ## TODO
-
 - [ ] swarms
 - [ ] settings window for changing connection
 - [ ] multiple connections
-
+- [ ] alert notifications for messages
