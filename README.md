@@ -71,8 +71,8 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 - [x] show logs
 - [x] show top
 - [x] inspect
-- [ ] copy from
-- [ ] copy to
+- [x] copy from
+- [x] copy to
 - [ ] attach container
 - [ ] prune
 
@@ -82,7 +82,7 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 - [x] show history
 - [x] search image
 - [x] save image
-- [ ] load image
+- [x] load image
 - [x] inspect
 - [ ] prune
 - [ ] create container/pull/run from search
