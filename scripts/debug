@@ -1,0 +1,5 @@
+#! /bin/sh
+
+#pyinstaller -n pyzza-debug -p src/ --distpath .debug/dist --workpath .debug/build --hidden-import timeago.locales.en -d all -y src/main.py
+
+pyinstaller -y pyzza-debug.spec
