@@ -3,9 +3,6 @@ from common import *
 from args import *
 import os, docker
 from config import DOCKER_HOST
-#inspect.getfile(os)
-#inspect.getfile(docker)
-#os.path.dirname(inspect.getfile(docker))
 
 import docker
 from docker import DockerClient
@@ -203,7 +200,7 @@ class Docker:
         return names
     
     def stat(self, id, path):
-        kwargs = ExecRunKwargs(cmd=f'file {path}')
+        kwargs = ExecRunKwargs(cmd=f'file -L {path}')
         (exit_code, output) = self.exec_run(id, kwargs=kwargs)
         output = str(output.decode('ascii')).strip()
         #print(output)
@@ -278,7 +275,7 @@ class Docker:
 
     def get_archive(self, id, path):
         cont = self.get_container(id)
-        return cont.get_archive(path)
+        return cont.get_archive(path, encode_stream=True)
 
     def create_container(self, kwargs = CreateContanerKwargs()):
         return _dock.containers.create(**kwargs.__dict__)
@@ -288,7 +285,7 @@ class Docker:
     
     def put_archive(self, id, path, data):
         cont = self.get_container(id)
-        cont.put_archive(path, data)
+        return cont.put_archive(path, data)
 
     def prune_containers(self):
         return _dock.containers.prune()

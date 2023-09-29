@@ -16,7 +16,9 @@ class BrowserWindow(Gtk.Window):
     tsFileExplorer: Gtk.TreeStore = Gtk.Template.Child()
     bCopyFromContainer: Gtk.Button = Gtk.Template.Child()
     bCopyToContainer: Gtk.Button = Gtk.Template.Child()
-    selected_path = list()
+    selected_paths = list()
+    selected_path = None
+    selected_name = None
 
     def __init__(self, container=None):
         super().__init__()
@@ -26,7 +28,7 @@ class BrowserWindow(Gtk.Window):
         self.container_id = container[0][0]
         self.container_name = container[0][1]
         self.hbFileExplorer.set_subtitle(self.container_name or self.container_id)
-        self.selected_path = list()
+        self.selected_paths = list()
 
     def show(self):
         #self.selected_path.append()
@@ -66,7 +68,7 @@ class BrowserWindow(Gtk.Window):
 
     @Gtk.Template.Callback()
     def tvFileExplorer_cursor_changed_cb(self, args):
-        spath = np.array(self.selected_path)
+        spath = np.array(self.selected_paths)
         sel = args.get_selection()
         [mmodel, paths] = sel.get_selected_rows()
         [model, iter] = sel.get_selected()
@@ -94,7 +96,9 @@ class BrowserWindow(Gtk.Window):
             spath = list()
             (file_path, spath) = self.get_file_path(tpath, model)
             #print('[get_file_path]:', file_path, spath)
-            self.selected_path = spath
+            self.selected_paths = spath
+            self.selected_path = spath[-1][1]
+            self.selected_name = spath[-1][0]
         file_uri = '/' + file_path
         #names = model.get(iter, 0)
         #tree = list(names)
@@ -150,18 +154,21 @@ class BrowserWindow(Gtk.Window):
     
     @Gtk.Template.Callback()
     def bCopyToContainer_clicked_cb(self, args):
-        copyto = CopyToContainerWindow()
+        copyto = CopyToContainerWindow(container_id=self.container_id, selected_path=self.selected_path, selected_name=self.selected_name)
         copyto.show()
 
     @Gtk.Template.Callback()
     def bCopyFromContainer_clicked_cb(self, args):
-        copyfrom = CopyFromContainerWindow()
+        print(self.selected_path)
+        stat = self.dc.stat(self.container_id, path=self.selected_path)
+        print(f'[{self.selected_path}]:', stat)
+        copyfrom = CopyFromContainerWindow(container_id=self.container_id, selected_path=self.selected_path, selected_name=self.selected_name)
         copyfrom.show()
 
     def get_file_path(self, tpath: Gtk.TreePath, model):
         idx = np.array(tpath.get_indices())
         segments = list()
-        spath = len(self.selected_path) and self.selected_path or np.empty((0,4))
+        spath = len(self.selected_paths) and self.selected_paths or np.empty((0,4))
         arr = np.empty((0,4))
         n_id = 1
         for indx in idx:

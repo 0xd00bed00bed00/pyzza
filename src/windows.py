@@ -18,7 +18,8 @@ from win.exec import ExecContainerOptsWindow
 from win.pull import ImagePullWindow
 from win.build import ImageBuildWindow
 from win.term import exec
-from win.ccopy import CopyFromContainerWindow, CopyToContainerWindow
+#from win.ccopy import CopyFromContainerWindow, CopyToContainerWindow
+from win.manage import ManageConnectionsWindow
 import threading, json, numpy as np
 
 @Gtk.Template.from_file('src/ui/pyzza.glade')
@@ -1147,5 +1148,10 @@ class MainWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def bLoadImage_clicked_cb(self, args):
         pass
+
+    @Gtk.Template.Callback()
+    def bSettings_clicked_cb(self, args):
+        manage = ManageConnectionsWindow()
+        manage.show()
 
     #endregion

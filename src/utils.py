@@ -2,6 +2,7 @@ import gi, os, sys, subprocess
 from dateutil.parser import parse
 from datetime import datetime, date
 import timeago, pytz, time
+gi.require_version('Gtk', '3.0')
 from gi.repository import Vte
 from gi.repository import GLib, Notify
 

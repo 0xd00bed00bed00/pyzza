@@ -1095,6 +1095,18 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
+              <object class="GtkButton" id="bSearchRunContainer">
+                <property name="label" translatable="yes">run</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bSearchRunContainer_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="bStopContainer">
                 <property name="label" translatable="yes">stop</property>
                 <property name="name">stop_container</property>
@@ -1205,31 +1217,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="bKillContainer">
-                <property name="label" translatable="yes">kill</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="image">image9</property>
-                <signal name="clicked" handler="bKillContainer_clicked_cb" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">8</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="bSearchRunContainer">
-                <property name="label" translatable="yes">run</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="bSearchRunContainer_clicked_cb" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="bRunContainer">
                 <property name="label" translatable="yes">run</property>
                 <property name="visible">True</property>
@@ -1276,6 +1263,19 @@
               </object>
               <packing>
                 <property name="position">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bKillContainer">
+                <property name="label" translatable="yes">kill</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">image9</property>
+                <signal name="clicked" handler="bKillContainer_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">8</property>
               </packing>
             </child>
             <child>
@@ -1488,6 +1488,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <signal name="clicked" handler="bSettings_clicked_cb" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
