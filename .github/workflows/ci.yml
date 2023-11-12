@@ -20,11 +20,11 @@ jobs:
     steps:
     - name: install prerequisites
       run: |
-        apt-get update
-        apt-get install python3-gi vte3 gtk3
-    - uses: actions/checkout@v3
+        sudo apt-get update
+        sudo apt-get install python3-gi vte3 gtk3
+    - uses: actions/checkout@v4
     - name: Set up Python 3.11
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.11"
     - name: Install dependencies
