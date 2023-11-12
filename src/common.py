@@ -5,21 +5,37 @@ import os
 
 load_dotenv()
 
+ENV=os.getenv('ENV') or 'development'
+DEBUG=ENV=='development'
+CTYPE_DEFAULT=int(os.getenv('CTYPE_DEFAULT') or '1')
+CPATH_DEFAULT=os.getenv('CPATH_DEFAULT') or '/run/user/1000/docker.sock'
 DOCKER_HOST=os.getenv('DOCKER_HOST') or 'unix:///run/user/1000/docker.sock'
 APP_VERSION=os.getenv('APP_VERSION') or '0.1'
 APP_NAME=os.getenv('APP_NAME') or 'pyzza'
 CONFIG_PATH_DEFAULT=os.getenv('CONFIG_PATH_DEFAULT') or 'config.ini'
 
+def getconfigdir():
+    return f'{user_config_dir(APP_NAME)}'
+
 def gettmpdir():
-    return f'{user_config_dir(APP_NAME)}/tmp'
+    return f'{getconfigdir()}/tmp'
 
 def getconfigpath():
-    return f'{user_config_dir(APP_NAME)}/{CONFIG_PATH_DEFAULT}'
+    return f'{getconfigdir()}/{CONFIG_PATH_DEFAULT}'
+
+def getlogdir():
+    return f'{getconfigdir()}/logs'
 
 def checkpaths():
+    configdir = getconfigdir()
+    if not path.isdir(configdir):
+        os.mkdir(configdir)
     dirname = gettmpdir()
     if not path.isdir(dirname):
         os.mkdir(dirname)
+    logdir = getlogdir()
+    if not path.isdir(logdir):
+        os.mkdir(logdir)
 
 class ModelType:
     CONTAINER = 'CONTAINER'
