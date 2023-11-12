@@ -16,6 +16,7 @@ platformdirs==3.10.0
 ply==3.11
 prompt-toolkit==3.0.39
 psutil==5.9.6
+psycopg2==2.9.9
 pyaml==21.10.1
 pycairo==1.24.0
 PyGObject==3.44.1
