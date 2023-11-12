@@ -11,8 +11,9 @@ from utils import gen_id
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 from models.data import Connection, engine, initdb
-from common import getconfigpath, checkpaths
-import os
+from common import getconfigpath, checkpaths, getconfigdir, getlogdir, APP_NAME
+import os, logging, logging.handlers
+#from logging.handlers import RotatingFileHandler
 
 class ConfigManager:
     engine: Engine = None
@@ -172,3 +173,98 @@ class Config:
             return CONNECTION_TYPES_MODEL.index(typestr)
         except:
             return -1
+
+class LogConfig:
+    defaultsections = {
+        'loggers': {
+            'keys': 'root,debugLogger,appLogger,warnLogger,errLogger'
+        },
+        'handlers': {
+            'keys': 'consoleHandler,appFileHandler,warnFileHandler,errFileHandler'
+        },
+        'formatters': {
+            'keys': 'logFormatter,errFormatter'
+        },
+        'logger_root': {
+            'level': 'DEBUG',
+            'handlers': 'consoleHandler',
+        },
+        'logger_debugLogger': {
+            'level': 'DEBUG',
+            'handlers': 'consoleHandler',
+            'qualname': 'debugLogger',
+            'propagate': 0,
+        },
+        'logger_appLogger': {
+            'level': 'INFO',
+            'handlers': 'appFileHandler',
+            'qualname': 'appLogger',
+            'propagate': 1,
+        },
+        'logger_warnLogger': {
+            'level': 'WARNING',
+            'handlers': 'warnFileHandler',
+            'qualname': 'warnLogger',
+            'propagate': 1,
+        },
+        'logger_errLogger': {
+            'level': 'ERROR',
+            'handlers': 'errFileHandler',
+            'qualname': 'errLogger',
+            'propagate': 1,
+        },
+        'handler_consoleHandler': {
+            'class': 'StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'logFormatter',
+            'args': '(sys.stdout,)'
+        },
+        'handler_appFileHandler': {
+            'class': 'FileHandler',
+            'level': 'INFO',
+            'formatter': 'logFormatter',
+            'args': f'(\'{getlogdir()}/app.log\',)'
+        },
+        'handler_warnFileHandler': {
+            'class': 'FileHandler',
+            'level': 'WARNING',
+            'formatter': 'errFormatter',
+            'args': f'(\'{getlogdir()}/warning.log\',)'
+        },
+        'handler_errFileHandler': {
+            'class': 'FileHandler',
+            'level': 'ERROR',
+            'formatter': 'errFormatter',
+            'args': f'(\'{getlogdir()}/error.log\',)'
+        },
+        'formatter_logFormatter': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        },
+        'formatter_errFormatter': {
+            'format': '%(asctime)s [%(levelname)s]: %(message)s'
+        },
+    }
+    def getconfigfile():
+        return f'{getconfigdir()}/{APP_NAME}.conf'
+
+    def writedefaultconfig():
+        checkpaths()
+        config = configparser.ConfigParser()
+        defaultpath = LogConfig.getconfigfile()
+        config.read(defaultpath)
+        if len(config.sections()) > 0:
+            config.clear()
+
+        for s in LogConfig.defaultsections:
+            if s not in config.sections():
+                config.add_section(s)
+                config[s] = LogConfig.defaultsections[s]
+
+        with open(defaultpath, 'w') as configfile:
+            config.write(configfile)
+
+rootLogger = logging.getLogger(name='root')
+debugLogger = logging.getLogger(name='debugLogger')
+appLogger = logging.getLogger(name='appLogger')
+warnLogger = logging.getLogger(name='warnLogger')
+errLogger = logging.getLogger(name='errLogger')

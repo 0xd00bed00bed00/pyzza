@@ -6,13 +6,12 @@ gi.require_version('Notify', '0.7')
 from gi.repository import Gtk, GObject, Vte, Notify, Gio
 from windows import MainWindow
 from constants import APP_ID
-from config import ConfigManager
+from config import ConfigManager, LogConfig, appLogger, debugLogger, warnLogger, errLogger
 from client import Docker
 from dotenv import load_dotenv
 from os import path
-from common import getconfigpath, gettmpdir, checkpaths
-import faulthandler, os
-import os
+from common import gettmpdir, checkpaths, DEBUG, ENV, getconfigdir, getlogdir
+import faulthandler, os, logging, logging.config, logging.handlers
 
 GObject.type_register(Vte.Terminal)
 
@@ -34,13 +33,20 @@ class Pyzza(Gtk.Application):
 
 def main():
     load_dotenv()
+    checkpaths()
+    LogConfig.writedefaultconfig()
+    logging.config.fileConfig(LogConfig.getconfigfile())
+    logging.info('Logger initialized')
+    debugLogger.debug('info')
+    appLogger.info('app')
+    warnLogger.warning('warn')
+    errLogger.error('error')
     try:
         faulthandler.enable()
-        checkpaths()
         app = Pyzza()
         app.run(sys.argv)
     except KeyboardInterrupt:
-        print('\nctrl+c detected. Shutting down')
+        errLogger.error('\nctrl+c detected. Shutting down', exc_info=True)
 
 if __name__ == '__main__':
     main()
