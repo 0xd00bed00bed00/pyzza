@@ -114,3 +114,7 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 - [ ] swarms
 
 ## TODO
+- [ ] create networks
+- [ ] create volumes
+- [ ] more options when creating containers (ports, volumes, etc.)
+- [ ] more options when creating images
