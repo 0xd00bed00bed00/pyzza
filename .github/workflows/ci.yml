@@ -36,10 +36,9 @@ jobs:
         whoami
         pwd
         ls -al scripts
-    - name: Build
+    - name: Debug Build
       run: |
         chmod +x ./scripts/debug && ./scripts/debug
-        chmod +x ./scripts/build && ./scripts/build
     - name: Archive Debug Build
       uses: thedoctor0/zip-release@0.7.5
       with:
@@ -47,10 +46,12 @@ jobs:
         directory: ./dist
         path: ./pyzza-debug
         filename: 'pyzza-debug.tar.gz'
+    - name: Release Build
+      run: |
+        chmod +x ./scripts/build && ./scripts/build
     - name: Upload Build Artifacts
       uses: ncipollo/release-action@v1
       with:
         artifacts:
-          ./dist/pyzza-debug.tar.gz
-          ./dist/pyzza
+          ./dist/pyzza-debug.tar.gz,./dist/pyzza
         token: ${{ secrets.GITHUB_TOKEN }}
