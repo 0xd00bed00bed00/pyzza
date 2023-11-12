@@ -5,6 +5,7 @@ import timeago, pytz, time
 gi.require_version('Gtk', '3.0')
 from gi.repository import Vte
 from gi.repository import GLib, Notify
+import string, random, uuid
 
 def get_time_ago(d, ms=True):
     pd = parse(d)
@@ -102,4 +103,10 @@ def get_priv():
     if not check_priv():
         subprocess.check_call(['sudo', sys.executable] + sys.argv)
 
-
+def gen_id(retstr=True):
+    rnd = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    uid = uuid.uuid5(uuid.NAMESPACE_DNS, rnd)
+    if retstr:
+        id = str(uid)
+        return id
+    return uid
