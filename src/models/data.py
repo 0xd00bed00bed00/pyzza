@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, DeclarativeBase, Mapped, mapped_column
 from utils import gen_id
 from common import gettmpdir, checkpaths
 from sqlalchemy import create_engine
+from common import DEBUG
 
 CONNECTION_TYPES_MODEL = ['tcp', 'unix']
 
@@ -17,7 +18,7 @@ class Base(DeclarativeBase):
 def initdb():
     global engine
     if engine is None:
-        engine = create_engine(f'sqlite:///{gettmpdir()}/cache.db', echo=True)
+        engine = create_engine(f'sqlite:///{gettmpdir()}/cache.db', echo=DEBUG)
     Base.metadata.create_all(bind=engine)
 
 class Connection(Base):
