@@ -2,7 +2,7 @@ from gi.repository import Gtk, Gio
 import configparser, string, random, uuid, re
 from config import ConfigManager, Config
 from utils import gen_id, notify
-import threading, redis
+import threading
 from client import Docker
 from sqlalchemy.orm import Session
 from models.data import Connection, engine
