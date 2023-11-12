@@ -41,16 +41,13 @@ jobs:
         directory: ./dist
         path: ./pyzza-debug
         filename: 'pyzza-debug.tar.gz'
-    - name: Upload Debug Build
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: ./dist/pyzza-debug.tar.gz
-        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Release Build
       run: |
         chmod +x ./scripts/build && ./scripts/build
-    - name: Upload Release Build
+    - name: Upload Build Artifacts
       uses: ncipollo/release-action@v1
       with:
-        artifacts: ./dist/pyzza
+        artifacts:
+          ./dist/pyzza-debug.tar.gz
+          ./dist/pyzza
         token: ${{ secrets.GITHUB_TOKEN }}
