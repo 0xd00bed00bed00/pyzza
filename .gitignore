@@ -3,3 +3,6 @@ __pycache__
 .vscode
 *.glade~
 .flatpak/
+.debug/
+build
+dist
