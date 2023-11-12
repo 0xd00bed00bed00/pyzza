@@ -31,6 +31,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install pygobject
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: check
+      run: |
+        whoami
+        pwd
+        ls -al scripts
     - name: Build
       run: |
         chmod +x ./scripts/debug && ./scripts/debug
