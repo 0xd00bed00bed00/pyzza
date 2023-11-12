@@ -1,6 +1,7 @@
 from gi.repository import Gtk
 from slugify import slugify
 from args import RunContanerKwargs
+from win.term import exec
 import threading
 
 @Gtk.Template.from_file('src/ui/run_container_opts.glade')
