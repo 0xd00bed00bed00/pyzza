@@ -6,7 +6,7 @@ name: Pyzza
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 permissions:
   contents: write
@@ -31,9 +31,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install pygobject
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Debug Build
+    - name: Build
       run: |
         chmod +x ./scripts/debug && ./scripts/debug
+        chmod +x ./scripts/build && ./scripts/build
     - name: Archive Debug Build
       uses: thedoctor0/zip-release@0.7.5
       with:
@@ -41,9 +42,6 @@ jobs:
         directory: ./dist
         path: ./pyzza-debug
         filename: 'pyzza-debug.tar.gz'
-    - name: Release Build
-      run: |
-        chmod +x ./scripts/build && ./scripts/build
     - name: Upload Build Artifacts
       uses: ncipollo/release-action@v1
       with:
