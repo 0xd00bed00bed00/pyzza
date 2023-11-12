@@ -5,11 +5,8 @@ name: Pyzza
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - '*'
-  pull_request:
-    branches: [ "main" ]
 
 permissions:
   contents: write
