@@ -1,6 +1,8 @@
 # PYZZA
 Linux desktop app using Glade, GTK+ and Python for managing Docker images and containers
 
+[![Pyzza](https://github.com/0xd00bed00bed00/pyzza/actions/workflows/ci.yml/badge.svg)](https://github.com/0xd00bed00bed00/pyzza/actions/workflows/ci.yml)
+
 ## DEVELOPMENT
 
 clone this repo
