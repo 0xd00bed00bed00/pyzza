@@ -1,4 +1,4 @@
-from src.utils import *
+from utils import *
 
 def dashboard_create_row(client, id=None, immut=False):
     if id is None: return

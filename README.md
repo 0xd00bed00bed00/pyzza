@@ -46,6 +46,20 @@ run
 ./launch
 ```
 
+## BUILD
+
+```bash
+./scripts/build
+```
+This will generate a single binary that includes all dependencies causing its file size to be large.
+
+## DEBUG
+
+```bash
+./scripts/debug
+```
+This will generate an uncompressed debug build under `.debug`
+
 ## USER INTERFACE
 
 To edit UI files in `src/ui` Glade must be installed in your system
@@ -60,6 +74,7 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 ## FEATURES
 ### GLOBAL
 - [x] built-in terminal
+- [x] settings window for changing connection
 
 ### CONTAINERS
 - [x] run container
@@ -93,8 +108,13 @@ A script `scripts/dockerd` for running rootless Docker via TCP is also provided
 ### NETWORKS
 - [x] inspect
 
-## TODO
-- [ ] swarms
-- [ ] settings window for changing connection
-- [ ] multiple connections
+### IN PROGRESS
+- [ ] connect to multiple Docker instances
 - [ ] alert notifications for messages
+- [ ] swarms
+
+## TODO
+- [ ] create networks
+- [ ] create volumes
+- [ ] more options when creating containers (ports, volumes, etc.)
+- [ ] more options when creating images

@@ -1,0 +1,1 @@
+CONNECTION_TYPES_MODEL = ['tcp', 'unix']

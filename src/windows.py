@@ -4,7 +4,7 @@ from client import Docker
 from common import ModelType
 from utils import *
 from models.helpers import *
-from config import APP_VERSION, APP_NAME
+from common import APP_VERSION, APP_NAME
 from win.browser import BrowserWindow
 from win.history import ImageHistoryWindow
 from win.save import ImageSaveWindow
@@ -18,9 +18,9 @@ from win.exec import ExecContainerOptsWindow
 from win.pull import ImagePullWindow
 from win.build import ImageBuildWindow
 from win.term import exec
-#from win.ccopy import CopyFromContainerWindow, CopyToContainerWindow
 from win.manage import ManageConnectionsWindow
 import threading, json, numpy as np
+from config import ConfigManager
 
 @Gtk.Template.from_file('src/ui/pyzza.glade')
 class MainWindow(Gtk.ApplicationWindow):
@@ -111,16 +111,20 @@ class MainWindow(Gtk.ApplicationWindow):
     volumes = None
     networks = None
 
-    def __init__(self, application):
+    config = None
+
+    def __init__(self, application, docker_client=None):
         super().__init__(application=application)
 
-        #self.running_containers = np.empty((0,10))
-
-        self.dc = Docker()
+        self.config = ConfigManager.defaultconfig
+        assert self.config is not None
+        self.dc = docker_client
+        if docker_client is None:
+            self.dc = Docker()
         self.check_engine()
         the = threading.Thread(target=self.listen_to_events, daemon=True, name='events')
         the.start()
-    
+
     #region docker event handlers
     def listen_to_events(self):
         events = [
@@ -1041,7 +1045,6 @@ class MainWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def bBrowse_clicked_cb(self, args):
         browser = BrowserWindow(self.selected_running_container)
-        #browser.show()
         th = threading.Thread(target=browser.show, daemon=True)
         th.start()
 

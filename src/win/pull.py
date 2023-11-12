@@ -1,4 +1,5 @@
 from gi.repository import Gtk
+from win.term import exec
 
 @Gtk.Template.from_file('src/ui/pull_image.glade')
 class ImagePullWindow(Gtk.Window):

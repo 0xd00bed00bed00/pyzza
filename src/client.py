@@ -1,22 +1,31 @@
-from utils import get_time_ago, spawn_pty, pretty_size
+from utils import get_time_ago, spawn_pty, pretty_size, notify
 from common import *
 from args import *
-import os, docker
-from config import DOCKER_HOST
-
-import docker
+from config import ConfigManager
 from docker import DockerClient
+import os
 
 class Docker:
-    def __init__(self):
+    def __init__(self, base_url=None):
         global DOCKER_DEFAULT_HOST
         global _dock
         global _apiclient
 
-        _dock = DockerClient(base_url=DOCKER_HOST)
-        _apiclient = _dock.api
-        self.daemon = _dock
-        self.client = _apiclient
+        try:
+            host = base_url or ConfigManager.defaultconfig.get_host()
+            _dock = DockerClient(base_url=host)
+            _apiclient = _dock.api
+            self.daemon = _dock
+            self.client = _apiclient
+        except Exception as ex:
+            notify(summary='Error connecting to server', body=f'{ex}')
+
+    def close(self):
+        self.daemon.close()
+
+    def check_status(self):
+        self.daemon.version()
+        self.daemon.ping()
     
     def list_containers(self):
         containers = []

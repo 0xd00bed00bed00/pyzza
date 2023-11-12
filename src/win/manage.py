@@ -1,17 +1,23 @@
-from gi.repository import Gtk
+from gi.repository import Gtk, Gio
 import configparser, string, random, uuid, re
+from config import ConfigManager, Config
+from utils import gen_id, notify
+import threading
+from client import Docker
+from sqlalchemy.orm import Session
+from models.data import Connection, engine
 
 @Gtk.Template.from_file('src/ui/manage.glade')
 class ManageConnectionsWindow(Gtk.Window):
     __gtype_name__ = 'wManageConnections'
 
-    config = configparser.ConfigParser()
+    config = None #configparser.ConfigParser()
 
     activeConnection = None
     defaultConnection = None
     selectedConnection = None
     selectedConnectionLabel = None
-    connections = dict()
+    connections = None
 
     txtName = Gtk.Template.Child()
     cbType = Gtk.Template.Child()
@@ -32,77 +38,66 @@ class ManageConnectionsWindow(Gtk.Window):
 
     DEFAULT_NEW_CONNECTION_NAME = 'New Connection'
 
+    isupdating = False
+
     def __init__(self):
         super().__init__()
-        cfg = self.config
+        self.config = ConfigManager.load(ConfigManager.configpath)
+        cfg = self.config.config
         cfg.SECTCRE = re.compile(r"\[ *(?P<header>[^]]+?) *\]")
         try:
-            cfg.read('config.ini')
-            #self.defaultConnection = cfg['DEFAULT']
-            default = cfg['DEFAULT']
-            id = self.gen_id()
-            self.defaultId = id
-            tp = default['type']
-            #print('[tp]:', tp, tp.isnumeric())
-            if tp.isnumeric() or tp == '-1':
-                tp = int(tp)
-            else:
-                model = self.cbType.get_model()
-                for row in range(len(model)):
-                    if model[row][0] == tp:
-                        tp = row
-                        break
-            self.connections['DEFAULT'] = {
-                'dat': {
-                    'name': default['name'] or 'default',
-                    'type': tp,
-                    'path': default['path'] or '',
-                },
-                'old': default['name'],
-                'cfg': default,
-                'lbl': self.lDefaultConnection,
-                'id': id,
-            }
-            conns = cfg.sections()
-            #print(conns)
-            for conn in conns:
-                #id = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-                tp = cfg[conn]['type']
-                print('[cfg]:', tp, tp.isnumeric())
-                if tp.isnumeric():
-                    tp = int(tp)
-                else:
-                    #tp = -1
-                    cb = self.cbType
-                    model = cb.get_model()
-                    print('[model]:', model[0][0])
-                    for row in range(len(model)):
-                        print('[row]:', row, model[row][0], tp, model[row][0] == tp)
-                        if model[row][0] == tp:
-                            tp = row
-                            print('[match]:', tp)
-                            break
-                row = self.create_row(name=conn, old_name=conn, conntype=tp, path=cfg[conn]['path'])
+            assert self.config is not None
+            assert self.config.config is not None
+            default = self.config.default_connection
+            assert default is not None
+            self.defaultConnection = self.config.default_connection
+            self.connections = self.config.connections
+            for (id, conn) in self.connections.items():
+                if id == 'DEFAULT':
+                    continue
+                tp = conn.ctype
+                row = self.create_row(id=id, name=conn.name, old_name=conn.old, conntype=tp, path=conn.connpath)
                 assert row is not None
                 self.lbConnections.insert(row, -1)
-                #self.lbConnections.select_row(row)
-            #self.defaultConnection = default
-            print('[load]:', self.connections)
+            
             self.defaultConnection = self.connections['DEFAULT']
             self.lbConnections.select_row(self.lrDefaultConnection)
             self.bDelete.set_sensitive(False)
             self.bDelete.set_visible(False)
             self.bSetAsDefault.set_sensitive(False)
             self.bSetAsDefault.set_visible(False)
-            self.txtName.set_text(default['name'])
-            self.cbType.set_active(int(default['type']))
-            self.txtPath.set_text(default['path'])
-            #self.chSetAsDefault.set_active(True)
-            #self.chSetAsDefault.set_sensitive(False)
-            self.lDefaultConnection.set_name(id)
-            #self.selectedConnectionLabel = self.lDefaultConnection
+            self.txtName.set_text(default.name)
+            self.cbType.set_active(Config.get_index(typestr=default.conntype))
+            self.txtPath.set_text(default.connpath)
+            self.lDefaultConnection.set_name(default.id)
+            self.lDefaultConnection.set_text(default.name)
         except Exception as e:
             print('error:', e)
+
+    def update_list(self):
+        self.isupdating = True
+        for child in self.lbConnections.get_children():
+            self.lbConnections.remove(child)
+        self.lbConnections.insert(self.lrDefaultConnection, 0)
+        for (key, conn) in self.connections.items():
+            if key == 'DEFAULT':
+                continue
+            tp = conn.ctype
+            row = self.create_row(id=key, name=conn.name, old_name=conn.old, conntype=tp, path=conn.connpath, set_fields=True)
+            assert row is not None
+            self.lbConnections.insert(row, -1)
+        default = self.defaultConnection
+        self.bDelete.set_sensitive(False)
+        self.bDelete.set_visible(False)
+        self.bSetAsDefault.set_sensitive(False)
+        self.bSetAsDefault.set_visible(False)
+        self.txtName.set_text(default.name)
+        self.cbType.set_active(Config.get_index(typestr=default.conntype))
+        self.txtPath.set_text(default.connpath)
+        self.lDefaultConnection.set_name(default.id)
+        self.lDefaultConnection.set_text(default.name)
+        self.lbConnections.select_row(self.lrDefaultConnection)
+        self.isupdating = False
 
     @Gtk.Template.Callback()
     def bCancel_clicked_cb(self, args):
@@ -110,47 +105,61 @@ class ManageConnectionsWindow(Gtk.Window):
 
     @Gtk.Template.Callback()
     def bSave_clicked_cb(self, args):
-        name = self.txtName.get_text()
-        conntype = self.cbType.get_active()
-        path = self.txtName.get_text()
-        cfg = self.config
+        cfg = self.config.config
         cb = self.cbType
         model = cb.get_model()
-        #print('[keys]:', self.connections.keys())
-        for (key, value) in self.connections.items():
-            #print(key, value)
-            old = value['old']
-            #print('[old]:', old is not None, old in cfg.sections(), old in self.connections.keys(), old)
-            if old is not None:
-                cfg.remove_section(old)
-            if key == 'DEFAULT':
-                #print('[value]:', value['dat'])
-                tp = model[value['dat']['type']][0] or -1
-                #value['dat']['type'] = tp
-                cfg['DEFAULT']['type'] = tp
-                continue
-            d = value['dat']
-            #print(d, d['name'])
-            tp = model[d['type']][0] or -1
-            cfg[d['name']] = {
-                'type': tp,
-                'path': d['path'] or '',
-            }
-        print('[save]:', self.connections)
-        with open('config.ini', 'w') as configfile:
-            self.config.write(configfile)
+        with Session(engine, expire_on_commit=False) as session:
+            dc = dict(**self.connections)
+            cfg.clear()
+            for (key, value) in dc.items():
+                session.add(value)
+                old = value.old
+                if old is not None:
+                    cfg.remove_section(old)
+                    if value.action == 'delete':
+                        value.delete()
+                        self.connections.pop(value.id)
+                        cfg.remove_section(value.old)
+                if key == 'DEFAULT':
+                    self.defaultConnection = value
+                    rowid = value.ctype
+                    it = model.get_iter_from_string(f'{rowid}:0')
+                    tp, *rem = model.get(it, *[0])
+                    cfg['DEFAULT']['type'] = tp
+                    continue
+                value.old = value.name
+                tp = model[value.ctype] or -1
+                cfg[value.name] = {
+                    'type': tp,
+                    'path': value.connpath or '',
+                }
+            session.commit()
+        self.config.save()
+        self.update_list()
 
     @Gtk.Template.Callback()
     def bTest_clicked_cb(self, args):
         name = self.txtName.get_text()
-        conntype = self.cbType.get_active()
-        path = self.txtName.get_text()
+        model = self.cbType.get_model()
+        conntype = model[self.cbType.get_active()][0]
+        path = self.txtPath.get_text()
+        try:
+            dc = Docker(f'{conntype}://{path}')
+            dc.daemon.ping()
+            print('connection successful!')
+            notify(summary='Connecting to server', body='connection successful')
+        except Exception as ex:
+            print('[test connection]:', ex)
         #default = self.chSetAsDefault.get_active()
 
     @Gtk.Template.Callback()
     def bNew_clicked_cb(self, args):
         assert self.lbConnections is not None
-        row = self.create_row(name=self.DEFAULT_NEW_CONNECTION_NAME, conntype=-1, path='')
+        id = gen_id()
+        newconn = Connection(id=id, name=self.DEFAULT_NEW_CONNECTION_NAME, type=-1, path='')
+        newconn.old = None
+        self.connections[id] = newconn
+        row = self.create_row(id=id, name=self.DEFAULT_NEW_CONNECTION_NAME, conntype=-1, path='', old_name=None)
         self.lbConnections.insert(row, -1)
         self.lbConnections.select_row(row)
 
@@ -168,14 +177,19 @@ class ManageConnectionsWindow(Gtk.Window):
         lbl = self.selectedConnectionLabel
         id = lbl.get_name()
         conn = self.selectedConnection
-        name = conn['dat']['name']
-        if name in self.config.sections():
-            self.config.remove_section(name)
-        self.connections.pop(id)
-        print(id in self.connections.keys())
+        conn.action = 'delete'
+        name = conn.name
+        if name in self.config.config.sections():
+            self.config.config.remove_section(name)
+        if conn.old is None:
+            self.connections.pop(conn.id)
+        #self.connections.pop(conn.id)
+        print(id in self.connections.keys(), len(self.connections))
         lb = self.lbConnections
         row = lb.get_selected_row()
         row.destroy()
+        default = self.defaultConnection
+        self.selectedConnection = default
         lb.select_row(self.lrDefaultConnection)
 
     @Gtk.Template.Callback()
@@ -185,24 +199,32 @@ class ManageConnectionsWindow(Gtk.Window):
         assert id is not None
         default = self.defaultConnection
         conn = self.selectedConnection
-        cfg = self.config
-        dat = conn['dat']
-        name = dat['name']
+        conn.action = 'setasdefault'
+        cfg = self.config.config
+        #dat = conn['dat']
+        name = conn.name
         #print('[sections]:', cfg.sections(), self.connections.keys())
-        assert name in cfg.sections()
+        #assert name in cfg.sections()
         assert id in self.connections.keys()
-        self.connections[default['id']] = default
-        self.connections['DEFAULT'] = {
-            'dat': conn['dat'],
-            'old': conn['dat']['name'],
-            'lbl': lbl,
-        }
+        default.isdefault = False
+        self.connections[default.id] = default
+        conn.isdefault = True
+        self.connections['DEFAULT'] = conn
         #print(name in cfg.sections())
-        cfg['DEFAULT'] = dat
-        cfg[default['dat']['name']] = default['dat']
-        cfg.remove_section(name)
-        self.connections.pop(id)
-        #print('[DEFAULT]:', cfg['DEFAULT'])
+        cfg.remove_section(conn.name)
+        cfg['DEFAULT'] = {
+            'name': conn.name,
+            'type': conn.conntype,
+            'path': conn.connpath,
+        }
+        cfg[default.name] = {
+            'name': default.name,
+            'type': default.conntype,
+            'path': default.connpath,
+        }
+        self.connections.pop(conn.id)
+        #self.defaultConnection = conn
+        print('[DEFAULT]:', conn)
 
     @Gtk.Template.Callback()
     def lbConnections_activate_cursor_row_cb(self, a, b):
@@ -214,6 +236,7 @@ class ManageConnectionsWindow(Gtk.Window):
 
     @Gtk.Template.Callback()
     def lbConnections_row_activated_cb(self, a, b):
+        if self.isupdating: return
         #row = self.lbConnections.get_selected_row()
         idx = b.get_index()
         #print('[lbConnections_row_activated_cb]:', idx, a, b)
@@ -233,16 +256,17 @@ class ManageConnectionsWindow(Gtk.Window):
             self.selectedConnection = self.connections[id]
             #print('[selected]:', self.selectedConnection)
             conn = self.connections[id]
-            self.txtName.set_text(conn['dat']['name'])
-            self.cbType.set_active(conn['dat']['type'])
-            self.txtPath.set_text(conn['dat']['path'])
+            self.txtName.set_text(conn.name)
+            self.cbType.set_active(conn.ctype)
+            self.txtPath.set_text(conn.connpath)
             return
         #if idx == 0:
-        self.selectedConnection = default = self.defaultConnection
+        default = self.defaultConnection
+        self.selectedConnection = default
         #print('[selected]:', self.selectedConnection)
-        self.txtName.set_text(default['dat']['name'])
-        self.cbType.set_active(default['dat']['type'])
-        self.txtPath.set_text(default['dat']['path'])
+        self.txtName.set_text(self.defaultConnection.name)
+        self.cbType.set_active(self.defaultConnection.ctype)
+        self.txtPath.set_text(self.defaultConnection.connpath)
         #self.chSetAsDefault.set_active(True)
         #self.chSetAsDefault.set_sensitive(False)
         self.bDelete.set_sensitive(False)
@@ -253,6 +277,7 @@ class ManageConnectionsWindow(Gtk.Window):
 
     @Gtk.Template.Callback()
     def lbConnections_row_selected_cb(self, a, b):
+        if self.isupdating: return
         row = self.lbConnections.get_selected_row()
         if b is None:
             a.select_row(self.lrDefaultConnection)
@@ -270,7 +295,10 @@ class ManageConnectionsWindow(Gtk.Window):
         self.bDelete.set_sensitive(True)
         self.bDelete.set_visible(True)
         if idx == 0:
-            self.selectedConnection = self.connections['DEFAULT']
+            self.selectedConnection = self.defaultConnection
+            self.txtName.set_text(self.defaultConnection.name)
+            self.cbType.set_active(self.defaultConnection.ctype)
+            self.txtPath.set_text(self.defaultConnection.connpath)
             self.bSetAsDefault.set_sensitive(False)
             self.bSetAsDefault.set_visible(False)
             self.bDelete.set_sensitive(False)
@@ -280,6 +308,7 @@ class ManageConnectionsWindow(Gtk.Window):
 
     @Gtk.Template.Callback()
     def lbConnections_selected_rows_changed_cb(self, a):
+        if self.isupdating: return
         row = a.get_selected_row()
         if row is None:
             a.select_row(self.lrDefaultConnection)
@@ -297,13 +326,14 @@ class ManageConnectionsWindow(Gtk.Window):
         self.bDelete.set_sensitive(True)
         self.bDelete.set_visible(True)
         if idx == 0:
-            self.selectedConnection = self.connections['DEFAULT']
+            self.selectedConnection = self.defaultConnection
+            self.txtName.set_text(self.defaultConnection.name)
+            self.cbType.set_active(self.defaultConnection.ctype)
+            self.txtPath.set_text(self.defaultConnection.connpath)
             self.bSetAsDefault.set_sensitive(False)
             self.bSetAsDefault.set_visible(False)
             self.bDelete.set_sensitive(False)
             self.bDelete.set_visible(False)
-        #    self.chSetAsDefault.set_active(True)
-        #    self.chSetAsDefault.set_sensitive(False)
 
     @Gtk.Template.Callback()
     def lrDefaultConnection_activate_cb(self, args):
@@ -311,46 +341,54 @@ class ManageConnectionsWindow(Gtk.Window):
 
     @Gtk.Template.Callback()
     def txtName_changed_cb(self, args):
+        if self.isupdating: return
         self.selectedConnectionLabel.set_text(args.get_text())
         id = self.selectedConnectionLabel.get_name()
         if id in self.connections.keys():
-            self.connections[id]['dat']['name'] = args.get_text()
+            self.connections[id].name = args.get_text()
+        if id == self.defaultConnection.id:
+            self.connections['DEFAULT'].name = args.get_text()
 
     @Gtk.Template.Callback()
     def cbType_changed_cb(self, args):
+        if self.isupdating: return
         id = self.selectedConnectionLabel.get_name()
         cb = self.cbType
         t = cb.get_active()
         if id in self.connections.keys() or id == 'DEFAULT':
-            #model = cb.get_model()
-            #value = model[t][0]
-            #print('[value]:', value)
-            self.connections[id]['dat']['type'] = t
+            model = cb.get_model()
+            value = model[t][0]
+            self.connections[id].ctype = t
+            self.connections[id].conntype = value
 
     @Gtk.Template.Callback()
     def txtPath_changed_cb(self, args):
+        if self.isupdating: return
         id = self.selectedConnectionLabel.get_name()
-        if self.selectedConnection['id'] != self.defaultConnection['id']:
-            self.connections[id]['dat']['path'] = args.get_text()
+        if self.selectedConnection.id != self.defaultConnection.id:
+            self.connections[id].connpath = args.get_text()
             return
-        self.connections['DEFAULT']['dat']['path'] = args.get_text()
+        self.connections['DEFAULT'].connpath = args.get_text()
 
     def show(self):
         super().show()
-        print('[conns]:', self.connections)
 
-    def create_row(self, name=None, old_name=None, set_fields=False, conntype=None, path=None, default=False):
-        print('[conntype]:', conntype)
-        id = self.gen_id()
+    def destroy(self):
+        super().destroy()
+
+    def create_row(self, id=None, name=None, old_name=None, set_fields=False, conntype=None, path=None, default=False):
+        _id=id
+        if not id:
+            _id = gen_id()
 
         row = Gtk.ListBoxRow()
-        row.set_name(id)
+        row.set_name(_id)
         row.set_activatable(True)
         row.set_selectable(True)
         row.set_visible(True)
         txt = Gtk.Label(name)
         txt.set_visible(True)
-        txt.set_name(id)
+        txt.set_name(_id)
         row.add(txt)
 
         if set_fields:
@@ -358,6 +396,7 @@ class ManageConnectionsWindow(Gtk.Window):
             self.cbType.set_active(conntype)
             self.txtPath.set_text(path)
 
+        '''
         self.connections[id] = {
             'dat': {
                 'name': name,
@@ -368,16 +407,19 @@ class ManageConnectionsWindow(Gtk.Window):
             'lbl': txt,
             'id': id,
         }
+        '''
 
         return row
     
+    '''
     def gen_id(self):
         rnd = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
         uid = uuid.uuid5(uuid.NAMESPACE_DNS, rnd)
         id = str(uid)
         return id
+    '''
 
-class Connection:
+class Connection2:
     name = None
     conntype = None
     path = None
