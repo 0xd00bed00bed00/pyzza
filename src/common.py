@@ -5,10 +5,10 @@ import os
 
 load_dotenv()
 
-DOCKER_HOST=os.getenv('DOCKER_HOST')
-APP_VERSION=os.getenv('APP_VERSION')
-APP_NAME=os.getenv('APP_NAME')
-CONFIG_PATH_DEFAULT=os.getenv('CONFIG_PATH_DEFAULT')
+DOCKER_HOST=os.getenv('DOCKER_HOST') or 'unix:///run/user/1000/docker.sock'
+APP_VERSION=os.getenv('APP_VERSION') or '0.1'
+APP_NAME=os.getenv('APP_NAME') or 'pyzza'
+CONFIG_PATH_DEFAULT=os.getenv('CONFIG_PATH_DEFAULT') or 'config.ini'
 
 def gettmpdir():
     return f'{user_config_dir(APP_NAME)}/tmp'
