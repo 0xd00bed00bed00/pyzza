@@ -5,4 +5,5 @@ __pycache__
 .flatpak/
 .debug/
 build
+!scripts/build
 dist
