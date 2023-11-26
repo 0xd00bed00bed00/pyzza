@@ -1,4 +1,3 @@
-from typing import Union
 
 class RunContanerKwargs:
     image = None
@@ -667,3 +666,84 @@ class ExecRunKwargs:
         self.environment=environment
         self.workdir=workdir
         self.demux=demux
+
+class CreateNetworkArgs:
+    name = None
+    driver = None
+    options = None
+    labels = None
+    check_duplicate = None
+    internal = None
+    enable_ipv6 = None
+    attachable = None
+    scope = None
+    ingress = None
+
+    def __init__(self,
+        name: str=None,
+        driver: str=None,
+        options: dict=None,
+        check_duplicate: bool=None,
+        internal: bool=False,
+        labels: dict=None,
+        enable_ipv6: bool=False,
+        attachable: bool=None,
+        scope: str=None,
+        ingress: bool=None,
+    ):
+        self.name = name
+        self.driver = driver
+        self.options = options
+        self.check_duplicate = check_duplicate
+        self.internal = internal
+        self.labels = labels
+        self.enable_ipv6 = enable_ipv6
+        self.attachable = attachable
+        self.scope = scope
+        self.ingress = ingress
+
+class CreateVolumeArgs:
+    name = None
+    driver = None
+    driver_opts = None
+    labels = None
+
+    def __init__(self,
+        name: str=None,
+        driver: str=None,
+        driver_opts: dict=None,
+        labels: dict=None,
+    ):
+        self.name = name
+        self.driver = driver
+        self.driver_opts = driver_opts
+        self.labels = labels
+
+class CreateDockerClientArgs:
+    base_url = None
+    version = None
+    timeout = None
+    tls = None
+    user_agent = None
+    credstore_env = None
+    use_ssh_client = None
+    max_pool_size = None
+
+    def __init__(self,
+        base_url=None,
+        version=None,
+        timeout=None,
+        tls=False,
+        user_agent=None,
+        credstore_env=None,
+        use_ssh_client=False,
+        max_pool_size=None,
+    ):
+        self.base_url = base_url
+        self.version = version
+        self.timeout = timeout
+        self.tls = tls
+        self.user_agent = user_agent
+        self.credstore_env = credstore_env
+        self.use_ssh_client = use_ssh_client
+        self.max_pool_size = max_pool_size
