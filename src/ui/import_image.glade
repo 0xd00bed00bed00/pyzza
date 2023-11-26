@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkFileFilter" id="ffLoadImage">
+  <object class="GtkFileFilter" id="ffImportImage">
     <mime-types>
       <mime-type>application/x-tar</mime-type>
     </mime-types>
@@ -10,36 +10,46 @@
       <pattern>*.tar</pattern>
     </patterns>
   </object>
-  <template class="fcdLoadImage" parent="GtkFileChooserDialog">
+  <template class="wImportImage" parent="GtkWindow">
     <property name="can-focus">False</property>
+    <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="default-width">600</property>
-    <property name="default-height">400</property>
-    <property name="type-hint">dialog</property>
-    <property name="gravity">center</property>
-    <property name="do-overwrite-confirmation">True</property>
-    <property name="filter">ffLoadImage</property>
-    <property name="show-hidden">True</property>
-    <signal name="current-folder-changed" handler="fcdLoadImage_current_folder_changed_cb" swapped="no"/>
-    <signal name="file-activated" handler="fcdLoadImage_file_activated_cb" swapped="no"/>
-    <signal name="selection-changed" handler="fcdLoadImage_selection_changed_cb" swapped="no"/>
-    <signal name="update-preview" handler="fcdLoadImage_update_preview_cb" swapped="no"/>
-    <child internal-child="vbox">
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    <child>
       <object class="GtkBox">
+        <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkFileChooserWidget" id="fcbImportImage">
+            <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="filter">ffImportImage</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="spacing">5</property>
             <property name="layout-style">end</property>
             <child>
-              <object class="GtkButton" id="fcbCancelOpen">
-                <property name="label" translatable="yes">cancel</property>
+              <object class="GtkButton" id="bImport">
+                <property name="label" translatable="yes">import</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <signal name="clicked" handler="fcbCancelOpen_clicked_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -48,12 +58,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="fcbOpen">
-                <property name="label" translatable="yes">open</property>
+              <object class="GtkButton" id="bCancel">
+                <property name="label" translatable="yes">cancel</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <signal name="clicked" handler="fcbOpen_clicked_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -64,12 +73,9 @@
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
@@ -77,6 +83,7 @@
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="title" translatable="yes">import image</property>
         <property name="show-close-button">True</property>
         <child>
           <placeholder/>
