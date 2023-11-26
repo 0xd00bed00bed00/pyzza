@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import gi, os, sys, subprocess
 from dateutil.parser import parse
 from datetime import datetime, date
@@ -6,6 +7,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Vte
 from gi.repository import GLib, Notify
 import string, random, uuid
+from pyee.base import EventEmitter
 
 def get_time_ago(d, ms=True):
     pd = parse(d)
@@ -34,7 +36,7 @@ def unpack_dict(d, *args, **kwargs):
 def spawn_pty(term, argv, envv, callback=None, *cbargs):
     term.spawn_async(
         Vte.PtyFlags.DEFAULT,
-        None,
+        os.environ['HOME'],
         argv,
         envv,
         GLib.SpawnFlags.DEFAULT,
@@ -110,3 +112,5 @@ def gen_id(retstr=True):
         id = str(uid)
         return id
     return uid
+
+ee = EventEmitter()

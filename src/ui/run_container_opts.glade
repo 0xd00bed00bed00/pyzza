@@ -121,13 +121,29 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="lsNetworks">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name driver -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="lsPorts">
     <columns>
-      <!-- column-name proto -->
-      <column type="gchararray"/>
       <!-- column-name containerport -->
       <column type="gchararray"/>
       <!-- column-name hostport -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="lsVolumes">
+    <columns>
+      <!-- column-name hostpath -->
+      <column type="gchararray"/>
+      <!-- column-name bind -->
+      <column type="gchararray"/>
+      <!-- column-name mode -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -137,7 +153,7 @@
     <property name="default-width">600</property>
     <property name="gravity">center</property>
     <child>
-      <!-- n-columns=3 n-rows=14 -->
+      <!-- n-columns=3 n-rows=26 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -146,7 +162,6 @@
         <property name="margin-top">5</property>
         <property name="margin-bottom">5</property>
         <property name="column-spacing">5</property>
-        <property name="row-homogeneous">True</property>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
@@ -220,17 +235,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFixed">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">12</property>
-            <property name="width">3</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -263,7 +267,7 @@
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">8</property>
+            <property name="top-attach">10</property>
           </packing>
         </child>
         <child>
@@ -276,7 +280,7 @@
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">9</property>
+            <property name="top-attach">11</property>
           </packing>
         </child>
         <child>
@@ -289,7 +293,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -302,7 +306,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">8</property>
+            <property name="top-attach">10</property>
           </packing>
         </child>
         <child>
@@ -315,7 +319,7 @@
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">7</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -328,7 +332,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">6</property>
+            <property name="top-attach">8</property>
           </packing>
         </child>
         <child>
@@ -341,7 +345,7 @@
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">6</property>
+            <property name="top-attach">8</property>
           </packing>
         </child>
         <child>
@@ -354,7 +358,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">9</property>
+            <property name="top-attach">11</property>
           </packing>
         </child>
         <child>
@@ -440,100 +444,525 @@
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">13</property>
+            <property name="top-attach">25</property>
             <property name="width">3</property>
           </packing>
         </child>
         <child>
-          <object class="GtkTreeView" id="portsTree">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="model">lsPorts</property>
-            <child internal-child="selection">
-              <object class="GtkTreeSelection"/>
-            </child>
-            <child>
-              <object class="GtkTreeViewColumn">
-                <property name="title" translatable="yes">protocol</property>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkTreeViewColumn">
-                <property name="title" translatable="yes">exposed port</property>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">1</attribute>
-                  </attributes>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkTreeViewColumn">
-                <property name="title" translatable="yes">host port</property>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">2</attribute>
-                  </attributes>
-                </child>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">11</property>
-            <property name="width">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButtonBox">
+          <object class="GtkFrame">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="spacing">5</property>
-            <property name="layout-style">end</property>
+            <property name="label-xalign">0</property>
+            <property name="shadow-type">none</property>
             <child>
-              <object class="GtkButton" id="bAddPort">
-                <property name="label" translatable="yes">+</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="bAddPort_clicked_cb" swapped="no"/>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkButtonBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
+                    <property name="layout-style">end</property>
+                    <child>
+                      <object class="GtkButton" id="bAddPort">
+                        <property name="label" translatable="yes">+</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="bAddPort_clicked_cb" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                        <property name="non-homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="bRemovePort">
+                        <property name="label" translatable="yes">-</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="bRemovePort_clicked_cb" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                        <property name="non-homogeneous">True</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="height-request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="portsTree">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">lsPorts</property>
+                        <child>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">exposed port</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">host port</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-                <property name="non-homogeneous">True</property>
-              </packing>
             </child>
-            <child>
-              <object class="GtkButton" id="bRemovePort">
-                <property name="label" translatable="yes">-</property>
+            <child type="label">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="bRemovePort_clicked_cb" swapped="no"/>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">ports</property>
               </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-                <property name="non-homogeneous">True</property>
-              </packing>
             </child>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">21</property>
             <property name="width">3</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkFrame">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label-xalign">0</property>
+            <property name="shadow-type">none</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkButtonBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
+                    <property name="layout-style">end</property>
+                    <child>
+                      <object class="GtkButton" id="bAddVolume">
+                        <property name="label" translatable="yes">+</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="bAddVolume_clicked_cb" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                        <property name="non-homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="bRemoveVolume">
+                        <property name="label" translatable="yes">-</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="bRemoveVolume_clicked_cb" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                        <property name="non-homogeneous">True</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="height-request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="volumesTree">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="model">lsVolumes</property>
+                        <child>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">hostpath</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">bind</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn">
+                            <property name="title" translatable="yes">mode</property>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                              <attributes>
+                                <attribute name="text">2</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">volumes</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">24</property>
+            <property name="width">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtNetwork">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">6</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">network</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="chRemove">
+            <property name="label" translatable="yes">remove</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">12</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="chReadonly">
+            <property name="label" translatable="yes">readonly</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">12</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="chPublishAllPorts">
+            <property name="label" translatable="yes">publish all ports</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="chInit">
+            <property name="label" translatable="yes">init</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="chAutoRemove">
+            <property name="label" translatable="yes">auto remove</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="chOomKillDisable">
+            <property name="label" translatable="yes">oom kill disable</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">14</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtMacAddress">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">7</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">mac address</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">devices</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">environment</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">16</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtDevices">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">&lt;path_on_host&gt;:&lt;path_in_container&gt;:&lt;cgroup_permissions&gt;</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">15</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtEnvironment">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">comma-separated KEY=VALUE pairs</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">16</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">healthcheck</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">17</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtHealthcheck">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">"NONE" to disable or "CMD",args... or "CMD-SHELL",command</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">17</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">entry point</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtEntrypoint">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">Path to the docker-init binary</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">18</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">stop signal</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">19</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtStopSignal">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">The stop signal to use to stop the container (e.g. SIGINT)</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">19</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">platform</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">20</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="txtPlatform">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="placeholder-text" translatable="yes">os[/arch[/variant]]</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">20</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

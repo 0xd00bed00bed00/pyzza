@@ -1,0 +1,59 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Pyzza
+
+on:
+  push:
+    tags:
+      - 'v*-prerelease*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install prerequisites
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgirepository1.0-dev python3-gi python3-gi-cairo libcairo2-dev libgtk-3-dev libvte-2.91-0
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pygobject
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: check
+      run: |
+        whoami
+        pwd
+        ls -al scripts
+    - name: Debug Build
+      run: |
+        chmod +x ./scripts/debug && ./scripts/debug
+    - name: Archive Debug Build
+      uses: thedoctor0/zip-release@0.7.5
+      with:
+        type: 'tar'
+        directory: ./dist
+        path: ./pyzza-debug
+        filename: 'pyzza-debug-prerelease.tar.gz'
+    - name: Release Build
+      run: |
+        chmod +x ./scripts/build && ./scripts/build
+    - name: Upload Build Artifacts
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts:
+          ./dist/pyzza-debug-prerelease.tar.gz,./dist/pyzza
+        token: ${{ secrets.GITHUB_TOKEN }}
+        prerelease: true

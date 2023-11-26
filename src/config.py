@@ -1,8 +1,3 @@
-#DOCKER_HOST='unix:///run/user/1000/docker.sock'
-#APP_VERSION='0.1'
-#APP_NAME='pyzza'
-#CONFIG_PATH_DEFAULT='config.ini'
-
 import configparser, re
 from models.app import CONNECTION_TYPES_MODEL
 from platformdirs import *
@@ -10,8 +5,8 @@ from os import path
 from utils import gen_id
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
-from models.data import Connection, engine, initdb
-from common import getconfigpath, checkpaths, getconfigdir, getlogdir, APP_NAME
+from models.data import Connection, engine
+from common import getconfigpath, checkpaths, getconfigdir, getlogdir, APP_NAME, ENV, CPATH_DEFAULT
 import os, logging, logging.handlers
 #from logging.handlers import RotatingFileHandler
 
@@ -21,7 +16,7 @@ class ConfigManager:
     configpath = None
     defaultconfig = None
     defaulttype = 'unix'
-    defaultpath = '/run/user/1000/docker.sock'
+    defaultpath = CPATH_DEFAULT
     instance = None
 
     @staticmethod
@@ -59,7 +54,7 @@ class ConfigManager:
         cfg['DEFAULT'] = {
             'name': 'default',
             'type': 'unix',
-            'path': '/run/user/1000/docker.sock',
+            'path': ConfigManager.defaultpath,
         }
         config.save()
         with Session(engine) as s:
@@ -180,7 +175,7 @@ class LogConfig:
             'keys': 'root,debugLogger,appLogger,warnLogger,errLogger'
         },
         'handlers': {
-            'keys': 'consoleHandler,appFileHandler,warnFileHandler,errFileHandler'
+            'keys': 'consoleHandler,appFileHandler,rotatingFileHandler,rotatingWarnFileHandler,rotatingErrorFileHandler'
         },
         'formatters': {
             'keys': 'logFormatter,errFormatter'
@@ -197,19 +192,19 @@ class LogConfig:
         },
         'logger_appLogger': {
             'level': 'INFO',
-            'handlers': 'appFileHandler',
+            'handlers': 'rotatingFileHandler',
             'qualname': 'appLogger',
             'propagate': 1,
         },
         'logger_warnLogger': {
             'level': 'WARNING',
-            'handlers': 'warnFileHandler',
+            'handlers': 'rotatingWarnFileHandler',
             'qualname': 'warnLogger',
             'propagate': 1,
         },
         'logger_errLogger': {
             'level': 'ERROR',
-            'handlers': 'errFileHandler',
+            'handlers': 'rotatingErrorFileHandler',
             'qualname': 'errLogger',
             'propagate': 1,
         },
@@ -237,15 +232,34 @@ class LogConfig:
             'formatter': 'errFormatter',
             'args': f'(\'{getlogdir()}/error.log\',)'
         },
+        'handler_rotatingFileHandler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'errFormatter',
+            'args': f'(\'{getlogdir()}/pyzza.log\',\'a\',10000,10)'
+        },
+        'handler_rotatingWarnFileHandler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'WARNING',
+            'formatter': 'errFormatter',
+            'args': f'(\'{getlogdir()}/warning.log\',\'a\',10000,10)'
+        },
+        'handler_rotatingErrorFileHandler': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'ERROR',
+            'formatter': 'errFormatter',
+            'args': f'(\'{getlogdir()}/error.log\',\'a\',10000,10)'
+        },
         'formatter_logFormatter': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            'format': '%(asctime)s [' + ENV + '] - %(name)s - %(levelname)s - %(message)s'
         },
         'formatter_errFormatter': {
-            'format': '%(asctime)s [%(levelname)s]: %(message)s'
+            'format': '%(asctime)s [' + ENV + ':%(levelname)s]: %(message)s'
         },
     }
     def getconfigfile():
-        return f'{getconfigdir()}/{APP_NAME}.conf'
+        return path.join(getconfigdir(), f'{APP_NAME}.conf')
+        #return f'{getconfigdir()}/{APP_NAME}.conf'
 
     def writedefaultconfig():
         checkpaths()

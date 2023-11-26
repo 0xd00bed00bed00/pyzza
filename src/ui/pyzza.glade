@@ -154,6 +154,19 @@
     <signal name="row-deleted" handler="networksStore_row_deleted_cb" swapped="no"/>
     <signal name="row-inserted" handler="networksStore_row_inserted_cb" swapped="no"/>
   </object>
+  <object class="GtkPopover" id="pomConnections">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox" id="pomConnectionsBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkListStore" id="searchStore">
     <columns>
       <!-- column-name name -->
@@ -1095,6 +1108,18 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
+              <object class="GtkButton" id="bSearchRunContainer">
+                <property name="label" translatable="yes">run</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bSearchRunContainer_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="bStopContainer">
                 <property name="label" translatable="yes">stop</property>
                 <property name="name">stop_container</property>
@@ -1205,31 +1230,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="bKillContainer">
-                <property name="label" translatable="yes">kill</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="image">image9</property>
-                <signal name="clicked" handler="bKillContainer_clicked_cb" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">8</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="bSearchRunContainer">
-                <property name="label" translatable="yes">run</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="bSearchRunContainer_clicked_cb" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="bRunContainer">
                 <property name="label" translatable="yes">run</property>
                 <property name="visible">True</property>
@@ -1276,6 +1276,19 @@
               </object>
               <packing>
                 <property name="position">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bKillContainer">
+                <property name="label" translatable="yes">kill</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="image">image9</property>
+                <signal name="clicked" handler="bKillContainer_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">8</property>
               </packing>
             </child>
             <child>
@@ -1362,6 +1375,18 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="bStats">
+                <property name="label" translatable="yes">stats</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bStats_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">21</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="bSaveImage">
                 <property name="label" translatable="yes">save</property>
                 <property name="visible">True</property>
@@ -1370,7 +1395,7 @@
                 <signal name="clicked" handler="bSaveImage_clicked_cb" swapped="no"/>
               </object>
               <packing>
-                <property name="position">21</property>
+                <property name="position">22</property>
               </packing>
             </child>
             <child>
@@ -1382,8 +1407,29 @@
                 <signal name="clicked" handler="bBrowse_clicked_cb" swapped="no"/>
               </object>
               <packing>
-                <property name="position">22</property>
+                <property name="position">23</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <object class="GtkButton" id="bLoadImage">
@@ -1398,6 +1444,52 @@
                 <property name="position">3</property>
               </packing>
             </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkActionBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkButton" id="bManageSwarm">
+                <property name="label" translatable="yes">manage swarm</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bManageSwarm_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bNewVolume">
+                <property name="label" translatable="yes">new volume</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bNewVolume_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkButton" id="bImportImage">
                 <property name="label" translatable="yes">import image</property>
@@ -1408,7 +1500,7 @@
               </object>
               <packing>
                 <property name="pack-type">end</property>
-                <property name="position">2</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -1421,7 +1513,20 @@
               </object>
               <packing>
                 <property name="pack-type">end</property>
-                <property name="position">1</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="bNewNetwork">
+                <property name="label" translatable="yes">new network</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bNewNetwork_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -1437,11 +1542,24 @@
                 <property name="position">0</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkButton" id="bPruneVolumes">
+                <property name="label" translatable="yes">prune volumes</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="bPruneVolumes_clicked_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -1454,7 +1572,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">pyzza</property>
-        <property name="spacing">3</property>
+        <property name="spacing">5</property>
         <property name="show-close-button">True</property>
         <child>
           <object class="GtkImage">
@@ -1503,10 +1621,11 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton">
+          <object class="GtkButton" id="bNewWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <signal name="clicked" handler="bNewWindow_clicked_cb" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
@@ -1525,8 +1644,13 @@
             <property name="can-focus">True</property>
             <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
+            <property name="popover">pomConnections</property>
             <child>
-              <placeholder/>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">network-idle</property>
+              </object>
             </child>
           </object>
           <packing>

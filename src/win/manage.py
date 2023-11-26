@@ -1,17 +1,19 @@
 from gi.repository import Gtk, Gio
-import configparser, string, random, uuid, re
+import configparser, string, random, uuid, re, os
 from config import ConfigManager, Config
 from utils import gen_id, notify
 import threading
 from client import Docker
 from sqlalchemy.orm import Session
 from models.data import Connection, engine
+from config import errLogger, debugLogger, appLogger
+import numpy as np
 
 @Gtk.Template.from_file('src/ui/manage.glade')
 class ManageConnectionsWindow(Gtk.Window):
     __gtype_name__ = 'wManageConnections'
 
-    config = None #configparser.ConfigParser()
+    config = None
 
     activeConnection = None
     defaultConnection = None
@@ -107,7 +109,9 @@ class ManageConnectionsWindow(Gtk.Window):
     def bSave_clicked_cb(self, args):
         cfg = self.config.config
         cb = self.cbType
+        assert cb is not None
         model = cb.get_model()
+        assert model is not None
         with Session(engine, expire_on_commit=False) as session:
             dc = dict(**self.connections)
             cfg.clear()
@@ -144,12 +148,19 @@ class ManageConnectionsWindow(Gtk.Window):
         conntype = model[self.cbType.get_active()][0]
         path = self.txtPath.get_text()
         try:
+            if conntype == 'unix':
+                print('[isfile]:', path, os.path.isfile(path=path))
+                assert os.path.isfile(path=path)
             dc = Docker(f'{conntype}://{path}')
             dc.daemon.ping()
             print('connection successful!')
             notify(summary='Connecting to server', body='connection successful')
+        except AssertionError:
+            notify(summary='Connection Test Failed', body='Incomplete fields')
         except Exception as ex:
-            print('[test connection]:', ex)
+            #print('[test connection]:', ex)
+            notify(summary='Connection Test Failed', body=f'{ex}')
+            errLogger.error(ex, exc_info=True)
         #default = self.chSetAsDefault.get_active()
 
     @Gtk.Template.Callback()
@@ -163,7 +174,12 @@ class ManageConnectionsWindow(Gtk.Window):
         self.lbConnections.insert(row, -1)
         self.lbConnections.select_row(row)
 
-        self.txtName.set_text(self.DEFAULT_NEW_CONNECTION_NAME)
+        defaultname = self.DEFAULT_NEW_CONNECTION_NAME
+        ndarr = np.array(self.connections)
+        item = np.where(ndarr==defaultname)
+        if item is not None:
+            defaultname = f'{defaultname}-{id[:6]}'
+        self.txtName.set_text(defaultname)
         self.cbType.set_active(-1)
         self.txtPath.set_text('')
 

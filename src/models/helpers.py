@@ -12,6 +12,18 @@ def dashboard_create_row(client, id=None, immut=False):
         hostname = m.attrs['Config']['Hostname']
         ipaddr = m.attrs['NetworkSettings']['IPAddress']
         macaddr = m.attrs['NetworkSettings']['MacAddress']
+        ports = []
+        bindings = m.attrs['HostConfig']['PortBindings']
+        if bindings is not None:
+            for key, binding in bindings.items():
+                hports = []
+                for b in binding:
+                    hports.append(b['HostPort'])
+                hports = ','.join(hports)
+                ports.append(f'{key}:{hports}')
+        #for (key, value) in m.attrs['HostConfig']['PortBindings']:
+        #    ports.append(f'{key}:{value["HostPort"]}')
+        print('[ports]:', ports)
         r = [
             id,
             name,
@@ -19,7 +31,7 @@ def dashboard_create_row(client, id=None, immut=False):
             status,
             ago,
             img,
-            '',
+            ','.join(ports),
             '',
             hostname,
             ipaddr,
@@ -105,3 +117,6 @@ def networks_create_row(client, id=None, immut=False):
         return r
     except Exception as e:
         print('[networks_create_row] error:', e)
+
+def getrowdata(model, iter):
+    return model.get(iter, *[i for i in range(model.get_n_columns())])

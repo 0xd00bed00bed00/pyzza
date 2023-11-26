@@ -1,8 +1,9 @@
 import gi, os, sys
-print(os.getcwd())
-gi.require_version("Gtk", "3.0")
+#print(os.getcwd())
+gi.require_version('Gtk', '3.0')
 gi.require_version('Vte', '2.91')
 gi.require_version('Notify', '0.7')
+gi.require_version('WebKit', '3.0')
 from gi.repository import Gtk, GObject, Vte, Notify, Gio
 from windows import MainWindow
 from constants import APP_ID
@@ -11,7 +12,8 @@ from client import Docker
 from dotenv import load_dotenv
 from os import path
 from common import gettmpdir, checkpaths, DEBUG, ENV, getconfigdir, getlogdir
-import faulthandler, os, logging, logging.config, logging.handlers
+from multiprocessing import Process, cpu_count
+import faulthandler, os, logging, logging.config, logging.handlers, subprocess
 
 GObject.type_register(Vte.Terminal)
 
@@ -29,6 +31,7 @@ class Pyzza(Gtk.Application):
 
     def do_activate(self):
         self.window = self.window or MainWindow(application=self)
+        print('[app]:', type(self.window), isinstance(self.window, Gtk.ApplicationWindow))
         self.window.present()
 
 def main():
@@ -37,10 +40,7 @@ def main():
     LogConfig.writedefaultconfig()
     logging.config.fileConfig(LogConfig.getconfigfile())
     logging.info('Logger initialized')
-    debugLogger.debug('info')
-    appLogger.info('app')
-    warnLogger.warning('warn')
-    errLogger.error('error')
+    appLogger.info('app launched successfully')
     try:
         faulthandler.enable()
         app = Pyzza()

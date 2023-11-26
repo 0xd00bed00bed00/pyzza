@@ -3,6 +3,8 @@ from common import *
 from args import *
 from config import ConfigManager
 from docker import DockerClient
+from config import errLogger, debugLogger, appLogger
+from args import CreateNetworkArgs
 import os
 
 class Docker:
@@ -44,6 +46,16 @@ class Docker:
                 hostname = c['Config']['Hostname']
                 ipaddr = c['NetworkSettings']['IPAddress']
                 macaddr = c['NetworkSettings']['MacAddress']
+                ports = []
+                bindings = c['HostConfig']['PortBindings']
+                print('bindings:', c['HostConfig']['PortBindings'])
+                if bindings is not None:
+                    for key, binding in bindings.items():
+                        hports = []
+                        for b in binding:
+                            hports.append(b['HostPort'])
+                        hports = ','.join(hports)
+                        ports.append(f'{key}:{hports}')
                 r = [
                     id,
                     name,
@@ -51,7 +63,7 @@ class Docker:
                     status,
                     ago,
                     img,
-                    '',
+                    ' '.join(ports),
                     '',
                     hostname,
                     ipaddr,
@@ -60,7 +72,7 @@ class Docker:
                 store.append(r)
                 yield r
             except Exception as e:
-                print('[list_containers] error:', e)
+                errLogger.error('[list_containers] error: %s', e, exc_info=True)
 
     def list_containers_all(self):
         containers = []
@@ -163,7 +175,11 @@ class Docker:
         _apiclient.start(id)
 
     def run_container(self, kwargs = RunContanerKwargs()):
-        return _dock.containers.run(**kwargs.__dict__)
+        try:
+            return _dock.containers.run(**kwargs.__dict__)
+        except Exception as e:
+            notify(summary='Failed to run contaier', body=f'{e}')
+            errLogger.error(e, exc_info=True)
 
     def stop_container(self, id):
         _apiclient.stop(id, timeout=0)
@@ -296,11 +312,50 @@ class Docker:
         cont = self.get_container(id)
         return cont.put_archive(path, data)
 
-    def prune_containers(self):
-        return _dock.containers.prune()
+    def prune_containers(self, filters: dict=None):
+        try:
+            prune = _dock.containers.prune(filters=filters)
+            debugLogger.debug(prune)
+            if prune:
+                count = len(prune['ContainersDeleted'] or [])
+                spacereclaimed = pretty_size(prune['SpaceReclaimed'])
+                msg = f'{count} containers pruned. {spacereclaimed} reclaimed'
+                notify(summary='Prune Containers Complete', body=msg)
+                appLogger.info(msg)
+            return prune
+        except Exception as e:
+            errLogger.error(e, exc_info=True)
 
-    def prune_images(self):
-        return _dock.images.prune()
+    def prune_images(self, filters: dict=None):
+        try:
+            prune = _dock.images.prune(filters=filters)
+            debugLogger.debug(prune)
+            if prune:
+                count = len(prune['ImagesDeleted'] or [])
+                spacereclaimed = pretty_size(prune['SpaceReclaimed'])
+                msg = f'{count} images pruned. {spacereclaimed} reclaimed'
+                notify(summary='Prune Images Complete', body=msg)
+                appLogger.info(msg)
+            return prune
+        except Exception as e:
+            errLogger.error(e, exc_info=True)
+
+    def prune_volumes(self, filters: dict=None):
+        try:
+            prune = _dock.volumes.prune(filters=filters)
+            debugLogger.debug(prune)
+            if prune:
+                count = len(prune['VolumesDeleted'] or [])
+                spacereclaimed = pretty_size(prune['SpaceReclaimed'])
+                msg = f'{count} volumes pruned. {spacereclaimed} reclaimed'
+                notify(summary='Prune Volumes Complete', body=msg)
+                appLogger.info(msg)
+        except Exception as e:
+            errLogger.error(e, exc_info=True)
+
+    def container_stats(self, id):
+        container = self.get_container(id)
+        return container.stats(decode=True, stream=True)
 
     def inspect(self, id, model=None):
         if model == ModelType.CONTAINER:
@@ -365,3 +420,15 @@ class Docker:
             return _dock.volumes.get
         elif model == ModelType.NETWORK:
             return _dock.networks.get
+        
+    def create_network(self, data: CreateNetworkArgs):
+        name = data.name
+        del data.name
+        return self.client.create_network(name, **data.__dict__)
+        #return self.daemon.networks.create(name, **data.__dict__)
+
+    def create_volume(self, args: CreateVolumeArgs):
+        return self.client.create_volume(**args.__dict__)
+    
+    def join_swarm(self, join_token):
+        return self.client.join_swarm(['127.0.0.1'], join_token=join_token)

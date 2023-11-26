@@ -195,8 +195,8 @@
   <template class="wHistory" parent="GtkWindow">
     <property name="name">wHistory</property>
     <property name="can-focus">False</property>
-    <property name="default-width">600</property>
-    <property name="default-height">400</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
     <property name="gravity">center</property>
     <child>
       <object class="GtkScrolledWindow">
