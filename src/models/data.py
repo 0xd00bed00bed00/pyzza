@@ -41,7 +41,7 @@ class Connection(Base):
         self.old = name
 
     def __repr__(self):
-        return f'[{self.id}:{self.name}] {self.conntype}://{self.connpath} {self.isdefault}'
+        return f'{self.id}:{self.name}@{self.conntype}://{self.connpath} {self.isdefault}'
     
     def setasdefault(self):
         with Session(engine) as s:
@@ -69,5 +69,15 @@ class Connection(Base):
         with Session(engine) as s:
             s.query(Connection).delete()
             s.commit()
+
+class Setting(Base):
+    __tablename__ = 'settings'
+
+    id: Mapped[str] = mapped_column(primary_key=True, default=lambda: gen_id())
+    swarm_mode: Mapped[bool] = mapped_column(default=False)
+    container_export_path: Mapped[str] = mapped_column(nullable=True)
+    container_export_path_enable: Mapped[bool] = mapped_column(default=False)
+    config_path: Mapped[str] = mapped_column(nullable=True)
+    logs_path: Mapped[str] = mapped_column(nullable=True)
 
 initdb()
