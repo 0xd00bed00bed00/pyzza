@@ -1,4 +1,4 @@
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 from args import *
 from client import Docker
 from common import ModelType
@@ -19,11 +19,20 @@ from win.pull import ImagePullWindow
 from win.build import ImageBuildWindow
 from win.term import exec
 from win.manage import ManageConnectionsWindow
+from win.network import NewNetworkWindow
+from win.volume import NewVolumeWindow
+from win.operation_progress import OperationProgressWindow
+from win.diff import ContainerDiffWindow
+from win.stats import ContainerStatsWindow
+from win.swarm import ManageSwarmWindow
+from win.rename import ContainerRenameWindow
 import threading, json, numpy as np
-from config import ConfigManager
+from multiprocessing.pool import ThreadPool
+from config import ConfigManager, errLogger, appLogger, debugLogger, warnLogger
 
 @Gtk.Template.from_file('src/ui/pyzza.glade')
 class MainWindow(Gtk.ApplicationWindow):
+    pool = ThreadPool()
     __gtype_name__ = 'main_window'
     selected_tab = None
 
@@ -53,12 +62,20 @@ class MainWindow(Gtk.ApplicationWindow):
     bImportImage: Gtk.Button = Gtk.Template.Child()
     bPruneContainers: Gtk.Button = Gtk.Template.Child()
     bPruneImages: Gtk.Button = Gtk.Template.Child()
+    bPruneVolumes: Gtk.Button = Gtk.Template.Child()
     bBuildImage: Gtk.Button = Gtk.Template.Child()
     bCreateImage: Gtk.Button = Gtk.Template.Child()
     bCreateContainer: Gtk.Button = Gtk.Template.Child()
     bLoadImage: Gtk.Button = Gtk.Template.Child()
     bSearchRunContainer: Gtk.Button = Gtk.Template.Child()
     bPullImage: Gtk.Button = Gtk.Template.Child()
+    bNewNetwork: Gtk.Button = Gtk.Template.Child()
+    bNewVolume: Gtk.Button = Gtk.Template.Child()
+    bStats: Gtk.Button = Gtk.Template.Child()
+    bNewWindow: Gtk.Button = Gtk.Template.Child()
+
+    pomConnections = Gtk.Template.Child()
+    pomConnectionsBox = Gtk.Template.Child()
 
     dashboardTree: Gtk.TreeView = Gtk.Template.Child()
     dashboardStore: Gtk.ListStore = Gtk.Template.Child()
@@ -122,8 +139,11 @@ class MainWindow(Gtk.ApplicationWindow):
         if docker_client is None:
             self.dc = Docker()
         self.check_engine()
-        the = threading.Thread(target=self.listen_to_events, daemon=True, name='events')
-        the.start()
+        #the = threading.Thread(target=self.listen_to_events, name='events', daemon=True)
+        #the.start()
+        self.pool.apply_async(self.listen_to_events)
+        #self.connect('test-data', self.do_test_data)
+        #self.test_data()
 
     #region docker event handlers
     def listen_to_events(self):
@@ -175,6 +195,7 @@ class MainWindow(Gtk.ApplicationWindow):
                     rcrow = dashboard_create_row(client=self.dc, id=id)
                     name = event['Actor']['Attributes']['name']
                     if self.containers is None: return
+                    if self.containers[0] == 0: return
                     arr = self.containers
                     rowcol = np.where(arr==id)
                     [row], [col] = rowcol
@@ -202,6 +223,7 @@ class MainWindow(Gtk.ApplicationWindow):
                     ccrow = containers_create_row(client=self.dc, id=id)
                     name = event['Actor']['Attributes']['name']
                     if self.running_containers is None: return
+                    if self.running_containers[0] == 0: return
                     arr = self.running_containers
                     rowcol = np.where(arr==id)
                     [row], [col] = rowcol
@@ -255,7 +277,9 @@ class MainWindow(Gtk.ApplicationWindow):
                         self.containersStore.append(crow)
                         self.containers = np.append(self.containers, [crow], axis=0)
                 except Exception as e:
-                    print('create-error:', e)
+                    #print('create-error:', e)
+                    notify(summary='Error while creating container', body=f'{e}')
+                    errLogger.error(e, exc_info=True)
         except Exception as e:
             print(f'error: {e}')
 
@@ -278,6 +302,14 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def listen_to_network_events(self, event=None):
         self.networks_cursor_moved = False
+        if event['Action'] == 'create':
+            try:
+                id = event['id']
+                if self.networks is None: return
+                if self.networksStore is None: return
+                #cnet = self.networks_c
+            except Exception as e:
+                errLogger.error(e, exc_info=True)
 
     def listen_to_daemon_events(self):
         pass
@@ -404,17 +436,21 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_volume_actions(False)
         self.show_network_actions(False)
         self.show_search_actions(False)
+        self.pom_connections()
 
         title = APP_NAME
         self.hbMain.set_title(title)
-        self.hbMain.set_subtitle(APP_VERSION)
+        conf = ConfigManager.defaultconfig
+        conn = conf.default_connection
+        self.hbMain.set_subtitle(f'{APP_VERSION} ({conn.name})')
         super().present()
+        super().maximize()
 
     def check_engine(self):
         ping = self.dc.daemon.ping()
         info = self.dc.daemon.info()
         version = self.dc.daemon.version()
-        print('check:', ping)
+        print('check:', ping, version)
 
     def vis(self, vis=True, *widgets):
         if widgets is None or len(widgets)==0:
@@ -424,6 +460,35 @@ class MainWindow(Gtk.ApplicationWindow):
             if vis:
                 w.show()
             w.set_visible(vis)
+
+    def pom_connections(self):
+        config = ConfigManager.defaultconfig
+        defconn = config.default_connection
+        conns = config.connections
+        if conns is not None:
+            for conn in conns.values():
+                c = str(conn).split('@')
+                c = c[0].split(':')
+                c = c[1].replace(']', '') or 'unnamed connection'
+                if c == defconn.name:
+                    lbl = Gtk.Label(c)
+                    lbl.set_name(conn.id)
+                    lbl.set_visible(True)
+                    self.pomConnectionsBox.pack_start(lbl, True, True, 0)
+                    continue
+                mb = Gtk.ModelButton()
+                mb.set_name(conn.id)
+                mb.set_label(c)
+                mb.set_visible(True)
+                mb.connect('clicked', self.pom_connection_clicked_cb)
+                self.pomConnectionsBox.pack_start(mb, True, True, 0)
+
+    def pom_connection_clicked_cb(self, args):
+        print('[pom]:', args.get_name())
+        self.switch_connection(name=args.get_label())
+
+    def switch_connection(self, name, *args, **kwargs):
+        print('switching connection:', name)
 
     #endregion
 
@@ -529,8 +594,9 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def show_term(self):
         if self.term.get_pty() is None:
-            shell = os.environ.get('SHELL')
+            shell = os.environ['SHELL']
             spawn_pty(self.term, [shell], [], None)
+            #subprocess.call(['konsole', '-e', 'whoami'], shell=True)
 
     #endregion
 
@@ -564,6 +630,7 @@ class MainWindow(Gtk.ApplicationWindow):
         bexport = self.bExportContainer
         bdiff = self.bDiffContainer
         bbrowse = self.bBrowse
+        bstats = self.bStats
 
         if vis:
             self.show_container_actions(False)
@@ -571,7 +638,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.show_volume_actions(False)
             self.show_network_actions(False)
             self.show_search_actions(False)
-        self.vis(vis, bstop, brestart, bkill, bexec, battach, binspect, bsuspend, blogs, bresume, btop, brename, bexport, bdiff, bbrowse)
+        self.vis(vis, bstop, brestart, bkill, bexec, battach, binspect, bsuspend, blogs, bresume, btop, brename, bexport, bdiff, bbrowse, bstats)
 
         if status == 'running':
             self.vis(False, bresume)
@@ -596,8 +663,10 @@ class MainWindow(Gtk.ApplicationWindow):
         pass
     def show_volume_actions(self, vis=True):
         binspect = self.bInspect
+        #bnewvol = self.bNewVolume
 
         binspect.hide()
+        #bnewvol.hide()
         if vis:
             self.show_dashboard_actions(False)
             self.show_container_actions(False)
@@ -606,10 +675,13 @@ class MainWindow(Gtk.ApplicationWindow):
             self.show_search_actions(False)
             binspect.show()
         binspect.set_visible(vis)
+        #bnewvol.set_visible(vis)
 
     def show_network_actions(self, vis=True):
         binspect = self.bInspect
+        #bnewnet = self.bNewNetwork
         binspect.hide()
+        #bnewnet.hide()
 
         if vis:
             self.show_dashboard_actions(False)
@@ -619,6 +691,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.show_search_actions(False)
             binspect.show()
         binspect.set_visible(vis)
+        #bnewnet.set_visible(vis)
         
     def show_global_actions(self, vis=True):
         bimportimg = self.bImportImage
@@ -628,6 +701,8 @@ class MainWindow(Gtk.ApplicationWindow):
         bcreateimg = self.bCreateImage
         bcreatecon = self.bCreateContainer
         bload = self.bLoadImage
+        bnewnet = self.bNewNetwork
+        bnewvol = self.bNewVolume
 
         """ if vis:
             self.show_dashboard_actions(False)
@@ -636,7 +711,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.show_volume_actions(False)
             self.show_network_actions(False)
             self.show_search_actions(False) """
-        self.vis(True, bimportimg, bprunecon, bpruneimg, bbuildimg, bcreateimg, bcreatecon, bload)
+        self.vis(True, bimportimg, bprunecon, bpruneimg, bbuildimg, bcreateimg, bcreatecon, bload, bnewnet, bnewvol)
 
     def show_search_actions(self, vis=True):
         brun = self.bSearchRunContainer
@@ -716,13 +791,16 @@ class MainWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def containersStore_row_deleted_cb(self, a, b):
         if self.containers is None: return
-        d1, d2 = np.shape(self.containers) #len(self.containers)
+        [d1] = np.shape(self.containers) #len(self.containers)
         self.lContainers.set_text(f'containers ({d1})')
 
     @Gtk.Template.Callback()
     def containersStore_row_inserted_cb(self, a, b, c):
         if self.containers is None: return
-        d1, d2 = np.shape(self.containers) #len(self.containers)
+        shape = np.shape(self.containers) #len(self.containers)
+        print(self.containers, shape, len(shape))
+        #if shape[0] == 0: return
+        [d1] = shape
         self.lContainers.set_text(f'containers ({d1})')
 
     def container_select(self, a):
@@ -965,8 +1043,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_dashboard_actions(False)
         container, c = self.selected_running_container
         id = self.selected_id
-        th = threading.Thread(target=self.dc.stop_container, args=[id], daemon=True)
-        th.start()
+        #th = threading.Thread(target=self.dc.stop_container, args=[id])
+        #th.start()
+        self.pool.apply(self.dc.stop_container, args=[id])
 
     @Gtk.Template.Callback()
     def bStartContainer_clicked_cb(self, args):
@@ -978,11 +1057,12 @@ class MainWindow(Gtk.ApplicationWindow):
             try:
                 self.dc.start_container(*args)
             except Exception as exc:
-                print(type(exc))
-                print(vars(exc))
+                #print(type(exc))
+                #print(vars(exc))
                 notify(summary=f'Error on {name or id[:16]}', body=exc.explanation)
-        th = threading.Thread(target=start, args=[id], daemon=True)
-        th.start()
+        #th = threading.Thread(target=start, args=[id], daemon=True)
+        #th.start()
+        self.pool.apply(start, args=[id])
 
     @Gtk.Template.Callback()
     def bRestartContainer_clicked_cb(self, args):
@@ -1045,7 +1125,7 @@ class MainWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def bBrowse_clicked_cb(self, args):
         browser = BrowserWindow(self.selected_running_container)
-        th = threading.Thread(target=browser.show, daemon=True)
+        th = threading.Thread(target=browser.show)
         th.start()
 
     @Gtk.Template.Callback()
@@ -1095,7 +1175,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def bRenameContainer_clicked_cb(self, args):
-        print("coming soon")
+        rename = ContainerRenameWindow(client=self.dc)
+        rename.show()
     
     @Gtk.Template.Callback()
     def bExportContainer_clicked_cb(self, args):
@@ -1127,17 +1208,36 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def bPruneContainers_clicked_cb(self, args):
-        pruned = self.dc.prune_containers()
-        print(pruned)
+        th = threading.Thread(target=self.show_prune_progress_status, daemon=True)
+        th.start()
 
     @Gtk.Template.Callback()
     def bPruneImages_clicked_cb(self, args):
-        pruned = self.dc.prune_images()
-        print(pruned)
+        th = threading.Thread(target=self.show_prune_progress_status, daemon=True, kwargs={'prune_type':'image'})
+        th.start()
+
+    @Gtk.Template.Callback()
+    def bPruneVolumes_clicked_cb(self, args):
+        self.pool.apply(self.show_prune_progress_status, kwds={'prune_type':'volume'})
+
+    def show_prune_progress_status(self, prune_type='container'):
+        prog = OperationProgressWindow(show_progress_text=False, subtitle=f'Prune {prune_type}s')
+        prog.show()
+        notify(summary=f'{prune_type}', body='Operation in Progress')
+        if prune_type == 'container':
+            self.dc.prune_containers()
+        if prune_type == 'image':
+            self.dc.prune_images()
+        if prune_type == 'volume':
+            self.dc.prune_volumes()
+        prog.isdone = True
+        #prog.destroy()
 
     @Gtk.Template.Callback()
     def bDiffContainer_clicked_cb(self, args):
-        pass
+        #print(self.selected_running_container)
+        diff = ContainerDiffWindow(client=self.dc, container_id=self.selected_name)
+        diff.show()
 
     @Gtk.Template.Callback()
     def bSaveImage_clicked_cb(self, args):
@@ -1156,5 +1256,54 @@ class MainWindow(Gtk.ApplicationWindow):
     def bSettings_clicked_cb(self, args):
         manage = ManageConnectionsWindow()
         manage.show()
+
+    @Gtk.Template.Callback()
+    def bNewNetwork_clicked_cb(self, args):
+        newnet = NewNetworkWindow(client=self.dc)
+        newnet.show()
+
+    @Gtk.Template.Callback()
+    def bNewVolume_clicked_cb(self, args):
+        newvol = NewVolumeWindow(client=self.dc)
+        newvol.show()
+
+    @Gtk.Template.Callback()
+    def bStats_clicked_cb(self, args):
+        stats = ContainerStatsWindow(client=self.dc, container_name=self.selected_name)
+        stats.show()
+
+    @Gtk.Template.Callback()
+    def bManageSwarm_clicked_cb(self, args):
+        swarm = ManageSwarmWindow(client=self.dc)
+        swarm.show()
+
+    @Gtk.Template.Callback()
+    def bNewWindow_clicked_cb(self, args):
+        self.pool.apply(self.new_window)
+        #th = threading.Thread(target=self.new_window)
+        #th.start()
+
+    def new_window(self):
+        newwin = MainWindow(self.get_application(), docker_client=self.dc)
+        newwin.present()
+
+    #endregion
+
+    #region signals
+
+    __gsignals__ = {
+        'test-data': (
+            GObject.SIGNAL_RUN_FIRST,
+            GObject.TYPE_NONE,
+            (GObject.TYPE_PYOBJECT,)
+        ),
+    }
+
+    def test_data(self):
+        self.emit('test-data', 'hello test-data')
+
+    @ee.on('test-data')
+    def do_test_data(data):
+        print('[data]:', data)
 
     #endregion
